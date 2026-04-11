@@ -11,27 +11,22 @@
     
     <style>
         :root { --gold: #d4af37; --bg: #050505; --panel: #111; --silver: #e0e0e0; --accent: #222; }
-        body { background: var(--bg); color: var(--silver); font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; overflow: hidden; }
+        body { background: var(--bg); color: var(--silver); font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; overflow-x: hidden; }
         
         .home-btn { position: absolute; top: 20px; left: 20px; z-index: 100; }
         .home-btn img { height: 35px; opacity: 0.5; transition: 0.3s; }
         .home-btn:hover img { opacity: 1; }
 
-        .calc-container { background: var(--panel); padding: 25px; border-radius: 30px; border: 1px solid #222; width: 360px; box-sizing: border-box; box-shadow: 0 40px 100px rgba(0,0,0,0.9); position: relative; }
+        .calc-container { background: var(--panel); padding: 25px; border-radius: 30px; border: 1px solid #222; width: 100%; max-width: 380px; box-sizing: border-box; box-shadow: 0 40px 100px rgba(0,0,0,0.9); position: relative; z-index: 10; }
         
         /* Display Panel */
         .display-wrapper { background: #000; border-radius: 15px; margin-bottom: 20px; padding: 15px; box-shadow: inset 0 0 20px #000; min-height: 80px; display: flex; flex-direction: column; justify-content: center; }
         #display { width: 100%; background: transparent; border: none; color: var(--gold); font-size: 1.8rem; text-align: right; font-family: 'Courier New', monospace; outline: none; padding: 0; margin: 0; }
 
         /* Navigation Tabs */
-        .tabs { display: flex; gap: 5px; margin-bottom: 15px; width: 100%; }
+        .tabs { display: flex; gap: 5px; margin-bottom: 15px; width: 100%; max-width: 380px; }
         .tab-btn { background: #1a1a1a; border: 1px solid #333; color: #555; padding: 10px 5px; border-radius: 10px; cursor: pointer; font-size: 0.55rem; text-transform: uppercase; flex: 1; transition: 0.2s; font-weight: bold; }
         .tab-btn.active { border-color: var(--gold); color: var(--gold); background: #221d10; }
-
-        /* AI Output Modal */
-        #verify-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(10, 10, 10, 0.98); border: 1px solid var(--gold); padding: 25px; border-radius: 20px; z-index: 1000; width: 320px; text-align: center; box-shadow: 0 0 50px rgba(212, 175, 55, 0.2); }
-        .mcq-btn { background: #1a1a1a; color: #fff; border: 1px solid #444; padding: 12px; width: 100%; margin: 6px 0; border-radius: 8px; cursor: pointer; font-family: monospace; font-size: 0.9rem; transition: 0.2s; }
-        .mcq-btn:hover { background: var(--gold); color: black; border-color: white; }
 
         /* Zones */
         #sketch-zone, #photo-zone { display: none; width: 100%; }
@@ -50,13 +45,40 @@
         .calc-btn.op { color: var(--gold); background: #222; font-size: 1.2rem; }
         .calc-btn.eq { background: var(--gold); color: black; font-weight: bold; font-size: 1.4rem; }
         .calc-btn.sci { font-size: 0.8rem; }
+        .calc-btn.ai-trigger { background: linear-gradient(45deg, #d4af37, #9b7e20); color: #000; font-weight: bold; font-size: 0.9rem; grid-column: span 2; }
         
         .disclaimer { font-size: 0.55rem; color: #444; margin-top: 15px; text-align: center; letter-spacing: 1px; }
+
+        /* NEW: AI Expanding Output Panel */
+        #ai-output-panel {
+            display: none;
+            background: #0a0a0a;
+            border: 1px solid var(--gold);
+            border-radius: 15px;
+            width: 100%;
+            max-width: 380px;
+            margin-top: 20px;
+            padding: 20px;
+            box-sizing: border-box;
+            color: #ccc;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.1);
+        }
+        #ai-output-panel h3 { margin-top: 0; color: var(--gold); font-size: 1rem; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        #ai-content-text { white-space: pre-wrap; font-family: 'Segoe UI', sans-serif; }
+        .loading-pulse { animation: pulse 1.5s infinite; color: var(--gold); font-weight: bold; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+        /* Modal for Tesseract verify */
+        #verify-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(10, 10, 10, 0.98); border: 1px solid var(--gold); padding: 25px; border-radius: 20px; z-index: 1000; width: 320px; text-align: center; box-shadow: 0 0 50px rgba(212, 175, 55, 0.2); }
+        .mcq-btn { background: #1a1a1a; color: #fff; border: 1px solid #444; padding: 12px; width: 100%; margin: 6px 0; border-radius: 8px; cursor: pointer; font-family: monospace; font-size: 0.9rem; transition: 0.2s; }
+        .mcq-btn:hover { background: var(--gold); color: black; border-color: white; }
     </style>
 </head>
 <body>
 
-    <a href="/" class="home-btn"><img src="/logo1.png" alt="Home"></a>
+    <a href="/" class="home-btn"><img src="/logo1.png" alt="Home" onerror="this.style.display='none'"></a>
 
     <div class="tabs">
         <button class="tab-btn active" onclick="setMode(event, 'std')">Standard</button>
@@ -76,7 +98,7 @@
             <canvas id="canvas"></canvas>
             <div style="display:flex; gap:10px; margin-top:10px;">
                 <button style="flex:1; background:#222; color:#666; border:none; border-radius:8px; cursor:pointer;" onclick="clearCanvas()">CLEAR</button>
-                <button class="ai-btn" style="flex:3; margin:0;" onclick="processAI('canvas')">SOLVE SKETCH</button>
+                <button class="ai-btn" style="flex:3; margin:0;" onclick="processVisionAI('canvas')">READ & SOLVE</button>
             </div>
         </div>
 
@@ -85,23 +107,36 @@
                 <span>📷 SNAP PROBLEM</span>
                 <span style="font-size: 0.6rem; margin-top: 10px; font-weight: normal; color:#444;">Good lighting required</span>
             </label>
-            <input type="file" id="file-input" accept="image/*" onchange="processAI('file')">
+            <input type="file" id="file-input" accept="image/*" onchange="processVisionAI('file')">
         </div>
 
-        <div class="disclaimer">V6.0 NEURAL ENGINE | MATH-STRICT WHITELIST</div>
+        <div class="disclaimer">V6.0 NEURAL ENGINE | AI-ENHANCED SOLVER</div>
+    </div>
+
+    <div id="ai-output-panel">
+        <h3>🤖 AI Step-by-Step Solution</h3>
+        <div id="ai-content-text"></div>
+        <button onclick="closeAIPanel()" style="margin-top:15px; width:100%; background:#222; color:#ccc; border:none; padding:10px; border-radius:8px; cursor:pointer;">Dismiss</button>
     </div>
 
     <div id="verify-modal">
-        <div style="font-size: 0.8rem; color: var(--gold); margin-bottom: 15px; font-weight: bold;">AI INTERPRETATION</div>
+        <div style="font-size: 0.8rem; color: var(--gold); margin-bottom: 15px; font-weight: bold;">DID I READ THIS RIGHT?</div>
         <div id="mcq-options"></div>
         <button onclick="closeModal()" style="margin-top:15px; background:transparent; border:none; color:#666; cursor:pointer; font-size: 0.7rem;">CANCEL</button>
     </div>
 
     <script>
+        // ==========================================
+        // ⚠️ YOUR API KEY GOES HERE ⚠️
+        // ==========================================
+        const OPENAI_API_KEY = "YOUR_API_KEY_HERE"; 
+        
         const d = document.getElementById('display');
         const grid = document.getElementById('button-grid');
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
+        const aiPanel = document.getElementById('ai-output-panel');
+        const aiContent = document.getElementById('ai-content-text');
         let drawing = false;
 
         function setMode(e, mode) {
@@ -113,35 +148,84 @@
             document.getElementById('photo-zone').style.display = (mode === 'photo') ? 'block' : 'none';
             
             if(mode === 'std' || mode === 'sci') renderButtons(mode);
-            if(mode === 'draw') setTimeout(initCanvas, 100); // Allow DOM to render before sizing
+            if(mode === 'draw') setTimeout(initCanvas, 100); 
+            closeAIPanel();
         }
 
-        // --- NEW TESSERACT WORKER API WITH MATH WHITELIST ---
-        async function processAI(source) {
-            d.value = "LOADING AI ENGINE...";
+        // --- CORE MATH CALCULATION ---
+        function solve() { 
+            try { 
+                let exp = d.value.replace(/×/g, '*').replace(/÷/g, '/');
+                let res = math.evaluate(exp); 
+                d.value = math.format(res, {precision: 10}); 
+            } catch (e) { 
+                d.value = "ERROR - TRY AI"; 
+            } 
+        }
+
+        // --- NEW: FETCH GPT-4o AI SOLVER ---
+        async function fetchAISolution(problemStr) {
+            aiPanel.style.display = 'block';
+            aiContent.innerHTML = '<span class="loading-pulse">Consulting AI Knowledge Base & Searching...</span>';
+            
+            if(OPENAI_API_KEY === "YOUR_API_KEY_HERE") {
+                aiContent.innerHTML = "❌ <b>Setup Required:</b> You need to add your OpenAI API Key inside the index.html file to use this feature.";
+                return;
+            }
+
+            try {
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${OPENAI_API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-4o",
+                        messages: [
+                            { role: "system", content: "You are an advanced university math professor. Solve the math problem provided step-by-step. Keep formatting clean using standard text (avoid markdown rendering issues). Provide a brief, real-world textbook or academic reference at the end to validate your formula." },
+                            { role: "user", content: "Solve this: " + problemStr }
+                        ]
+                    })
+                });
+
+                const data = await response.json();
+                if(data.error) throw new Error(data.error.message);
+                
+                // Set the display to show AI was used, output text in panel
+                d.value = "AI SOLVED 👇";
+                aiContent.innerHTML = data.choices[0].message.content.replace(/\n/g, '<br>');
+            } catch (err) {
+                console.error(err);
+                aiContent.innerHTML = "❌ AI Error: " + err.message;
+            }
+        }
+
+        function closeAIPanel() { aiPanel.style.display = 'none'; }
+
+        // --- TESSERACT VISION API ---
+        async function processVisionAI(source) {
+            d.value = "LOADING VISION...";
             const input = (source === 'canvas') ? canvas : document.getElementById('file-input').files[0];
             if(!input) return;
 
             try {
-                // Initialize dedicated Math Worker
                 const worker = await Tesseract.createWorker('eng');
                 await worker.setParameters({
-                    tessedit_char_whitelist: '0123456789+-*/().=sincostan^', // Forces AI to ignore standard alphabet
+                    tessedit_char_whitelist: '0123456789+-*/().=sincostan^xy', 
                 });
                 
-                d.value = "SCANNING PIXELS...";
+                d.value = "SCANNING...";
                 const result = await worker.recognize(input);
-                await worker.terminate(); // Free up memory
+                await worker.terminate(); 
 
-                // Clean the output
                 let raw = result.data.text.toLowerCase().replace(/\s/g, "");
                 let processed = raw.replace(/x/g, '*').replace(/÷/g, '/');
 
                 if (processed.length > 0) showMCQ(processed);
                 else d.value = "WRITE BOLDER";
             } catch (err) { 
-                console.error(err);
-                d.value = "SCAN_ERROR"; 
+                console.error(err); d.value = "SCAN_ERROR"; 
             }
         }
 
@@ -151,25 +235,32 @@
             options.innerHTML = '';
             modal.style.display = 'block';
 
-            // Provide 3 variations
+            // Auto-fix common Tesseract 's' to '5' errors if they look like numbers
             let variations = [...new Set([raw, raw.replace(/s/g, '5'), raw.replace(/\*/g, '+')])].slice(0,3);
 
             variations.forEach(g => {
                 const btn = document.createElement('button');
                 btn.className = 'mcq-btn';
-                btn.innerText = g;
+                btn.innerText = "MathJS Solve: " + g;
                 btn.onclick = () => { d.value = g; solve(); closeModal(); };
                 options.appendChild(btn);
             });
 
-            // Ultimate Manual Fix Input
+            // Route directly to AI
+            const aiBtn = document.createElement('button');
+            aiBtn.className = 'mcq-btn';
+            aiBtn.style.border = "1px solid var(--gold)";
+            aiBtn.style.color = "var(--gold)";
+            aiBtn.innerText = "🤖 Ask AI Step-by-Step: " + raw;
+            aiBtn.onclick = () => { fetchAISolution(raw); closeModal(); };
+            options.appendChild(aiBtn);
+
             const manualBtn = document.createElement('button');
             manualBtn.className = 'mcq-btn';
-            manualBtn.style.border = "1px dashed var(--gold)";
-            manualBtn.style.color = "var(--gold)";
-            manualBtn.innerText = "MANUAL FIX";
+            manualBtn.style.border = "1px dashed #666";
+            manualBtn.innerText = "MANUAL TYPE FIX";
             manualBtn.onclick = () => { 
-                let fix = prompt("Correct the math string (e.g., sin(45) * 2):", raw);
+                let fix = prompt("Correct the math string:", raw);
                 if(fix) { d.value = fix; solve(); }
                 closeModal();
             };
@@ -177,17 +268,8 @@
         }
 
         function closeModal() { document.getElementById('verify-modal').style.display = 'none'; }
-        
-        function solve() { 
-            try { 
-                // math.js evaluation
-                let exp = d.value.replace(/×/g, '*').replace(/÷/g, '/');
-                let res = math.evaluate(exp); 
-                d.value = math.format(res, {precision: 10}); 
-            } catch (e) { d.value = "MATH_ERROR"; } 
-        }
 
-        // --- CANVAS LOGIC FIXED ---
+        // --- CANVAS LOGIC (Mobile bugs fixed) ---
         function initCanvas() {
             const zone = document.getElementById('sketch-zone');
             canvas.width = zone.clientWidth; 
@@ -195,7 +277,7 @@
             ctx.fillStyle = "black"; 
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.strokeStyle = 'white'; 
-            ctx.lineWidth = 14; 
+            ctx.lineWidth = 8; 
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
         }
@@ -211,34 +293,32 @@
         canvas.addEventListener('mousemove', (e) => { if (!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
         canvas.addEventListener('mouseup', () => drawing = false);
         
-        // Touch support optimized
         canvas.addEventListener('touchstart', (e) => { drawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); }, {passive: false});
         canvas.addEventListener('touchmove', (e) => { if (!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); }, {passive: false});
         canvas.addEventListener('touchend', () => drawing = false);
 
-        function clearCanvas() { ctx.fillStyle = "black"; ctx.fillRect(0, 0, canvas.width, canvas.height); }
+        function clearCanvas() { ctx.fillStyle = "black"; ctx.fillRect(0, 0, canvas.width, canvas.height); d.value="0"; closeAIPanel(); }
 
         // --- PERFECT GRID MATRICES ---
         function renderButtons(mode) {
             grid.innerHTML = '';
             
-            // Standard: 4 cols x 5 rows = 20 buttons
             const stdBtns = [
                 'C', '⌫', '(', ')',
                 '7', '8', '9', '/',
                 '4', '5', '6', '*',
                 '1', '2', '3', '-',
-                '0', '.', '=', '+'
+                '0', '.', '=', '+',
+                '🤖 Ask AI' // Added AI trigger to layout
             ];
 
-            // Scientific: 5 cols x 6 rows = 30 buttons
             const sciBtns = [
                 'sin', 'cos', 'tan', 'C', '⌫',
                 'sqrt', '^', '(', ')', '/',
                 'log', '7', '8', '9', '*',
                 'pi', '4', '5', '6', '-',
                 'e', '1', '2', '3', '+',
-                'exp', '0', '00', '.', '='
+                '🤖 Ask AI', '0', '00', '.', '='
             ];
 
             let activeBtns = (mode === 'std') ? stdBtns : sciBtns;
@@ -249,19 +329,18 @@
                 btn.innerText = b;
                 btn.className = 'calc-btn';
                 
-                // Styling classifications
                 if (['/', '*', '-', '+', '^'].includes(b)) btn.classList.add('op');
                 if (['sin','cos','tan','sqrt','log','pi','e','exp'].includes(b)) btn.classList.add('sci');
                 if (b === '=') btn.classList.add('eq');
+                if (b === '🤖 Ask AI') btn.classList.add('ai-trigger');
 
-                // Logic
                 btn.onclick = () => {
                     if(b === '=') solve();
-                    else if(b === 'C') d.value = '0';
+                    else if(b === '🤖 Ask AI') fetchAISolution(d.value);
+                    else if(b === 'C') { d.value = '0'; closeAIPanel(); }
                     else if(b === '⌫') d.value = d.value.slice(0, -1) || '0';
                     else {
                         let append = b;
-                        // Smart parentheses for functions
                         if(['sin','cos','tan','sqrt','log'].includes(b)) append = b + '(';
                         d.value = (d.value === '0') ? append : d.value + append;
                     }
@@ -270,7 +349,6 @@
             });
         }
         
-        // Initial load
         renderButtons('std');
     </script>
 </body>

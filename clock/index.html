@@ -2,497 +2,714 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CalcClock | Chronometer Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CalcClock | Chronometer Pro Suite</title>
     <link rel="icon" type="image/png" href="/logo1.png">
     <style>
+        /* LUXURY THEME ENGINE */
         :root {
-            --gold: #d4af37;
-            --ruby: #9b111e;
-            --sapphire: #0f52ba;
-            --bg: #050505;
-            --accent: var(--gold); 
+            --gold: #d4af37; --ruby: #9b111e; --sapphire: #0f52ba;
+            --bg: #050505; --panel: #111; --text: #e0e0e0; --border: #333;
+            --accent: var(--gold);
+        }
+        [data-theme="light"] {
+            --bg: #f0f0f5; --panel: #ffffff; --text: #222; --border: #ccc;
+            --accent: #b8860b; 
         }
 
-        body { background: var(--bg); color: var(--accent); font-family: 'Helvetica Neue', Helvetica, sans-serif; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0; overflow: hidden; transition: color 1s ease; }
-        #ambientCanvas { position: absolute; top: 0; left: 0; z-index: 0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Helvetica Neue', sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; overflow: hidden; transition: background 0.4s, color 0.4s; }
+        #ambientCanvas { position: absolute; top: 0; left: 0; z-index: 0; pointer-events: none; }
+        
+        /* SIDEBAR NAVIGATION */
+        .menu-btn { position: absolute; top: 20px; left: 20px; z-index: 1000; background: var(--panel); border: 1px solid var(--border); color: var(--text); font-size: 1.5rem; padding: 10px 15px; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        .menu-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .sidebar { position: fixed; top: 0; left: -300px; width: 260px; height: 100%; background: rgba(10,10,10,0.95); backdrop-filter: blur(15px); border-right: 1px solid var(--border); z-index: 999; transition: 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); display: flex; flex-direction: column; padding-top: 80px; box-shadow: 10px 0 30px rgba(0,0,0,0.5); overflow-y: auto; }
+        [data-theme="light"] .sidebar { background: rgba(255,255,255,0.95); }
+        .sidebar.open { left: 0; }
+        .nav-item { padding: 15px 25px; color: var(--text); text-decoration: none; font-size: 0.9rem; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; border-bottom: 1px solid var(--border); transition: 0.2s; display: flex; justify-content: space-between; }
+        .nav-item:hover, .nav-item.active { background: var(--accent); color: #000; font-weight: bold; }
 
-        /* Top Nav */
-        .top-nav { position: absolute; top: 30px; left: 30px; right: 30px; display: flex; justify-content: space-between; z-index: 100; align-items: center; }
-        .home-btn img { height: 40px; opacity: 0.6; transition: 0.3s; }
-        .home-btn:hover img { opacity: 1; transform: scale(1.05); }
-        .settings-btn { background: transparent; border: 1px solid #444; color: #888; padding: 8px 15px; border-radius: 20px; cursor: pointer; letter-spacing: 2px; text-transform: uppercase; font-size: 0.6rem; transition: 0.3s; backdrop-filter: blur(5px); }
-        .settings-btn:hover { color: var(--gold); border-color: var(--gold); }
+        /* MAIN CONTENT AREA */
+        .main-content { flex: 1; position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; width: 100%; padding: 20px; box-sizing: border-box; overflow-y: auto; }
+        .view-section { display: none; width: 100%; max-width: 900px; text-align: center; animation: fadeIn 0.4s ease; padding-bottom: 50px; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .watch-face { position: relative; text-align: center; z-index: 2; display: flex; flex-direction: column; align-items: center; }
-
-        /* Digital Clock */
-        #time { font-size: 8rem; font-weight: 100; letter-spacing: -2px; margin: 0; line-height: 1; text-shadow: 0 0 20px rgba(0,0,0,0.5); font-variant-numeric: tabular-nums; }
-        .sec-text { font-size: 3rem; color: #555; }
-        .ampm-text { font-size: 1.5rem; color: #777; margin-left: 10px; }
-
-        /* Analog Clock */
-        .analog-clock { width: 220px; height: 220px; border: 2px solid #333; border-radius: 50%; position: relative; display: none; box-shadow: inset 0 0 20px rgba(0,0,0,0.8), 0 0 30px rgba(212,175,55,0.1); margin-bottom: 20px; background: radial-gradient(circle, #111, #000); }
+        /* VIEW: CLOCK */
+        #time { font-size: clamp(4rem, 8vw, 8rem); font-weight: 100; letter-spacing: -2px; margin: 0; font-variant-numeric: tabular-nums; text-shadow: 0 0 20px rgba(0,0,0,0.2); }
+        .sec-text { font-size: clamp(1.5rem, 3vw, 3rem); color: #888; }
+        #date { font-size: clamp(0.8rem, 1.2vw, 1.2rem); letter-spacing: 4px; text-transform: uppercase; color: #888; margin-top: 10px; }
+        
+        .analog-container { display: none; width: 250px; height: 250px; border: 2px solid var(--border); border-radius: 50%; margin: 0 auto 20px; position: relative; background: var(--panel); box-shadow: inset 0 0 20px rgba(0,0,0,0.1); }
+        .hand { position: absolute; bottom: 50%; left: 50%; transform-origin: bottom; border-radius: 10px; }
+        .hour-hand { width: 6px; height: 70px; background: var(--text); margin-left: -3px; z-index: 3; }
+        .min-hand { width: 4px; height: 100px; background: var(--text); margin-left: -2px; z-index: 4; }
+        .sec-hand { width: 2px; height: 110px; background: var(--ruby); margin-left: -1px; z-index: 5; }
         .center-dot { position: absolute; top: 50%; left: 50%; width: 12px; height: 12px; background: var(--accent); border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; }
-        .hand { position: absolute; bottom: 50%; left: 50%; transform-origin: bottom; background: var(--accent); transform: translateX(-50%); border-radius: 10px; }
-        .hour-hand { width: 4px; height: 60px; z-index: 7; }
-        .min-hand { width: 2px; height: 90px; z-index: 8; }
-        .sec-hand { width: 1px; height: 100px; background: var(--ruby); z-index: 9; }
 
-        #date { font-size: 1.2rem; letter-spacing: 6px; text-transform: uppercase; color: #555; margin-top: 15px; transition: color 0.3s; }
+        .dials-grid { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-top: 30px; }
+        .dial { background: var(--panel); border: 1px solid var(--border); padding: 15px; border-radius: 12px; min-width: 140px; position: relative; transition: 0.3s; }
+        .dial:hover { border-color: var(--accent); }
+        .dial-time { font-size: 1.5rem; color: var(--accent); }
+        .dial-label { font-size: 0.7rem; text-transform: uppercase; color: #888; margin-top: 5px; }
+        .dial-dst { font-size: 0.6rem; color: var(--sapphire); font-weight: bold; }
+        .remove-dial { position: absolute; top: -8px; right: -8px; background: var(--ruby); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 12px; cursor: pointer; display: none; }
+        .dial:hover .remove-dial { display: block; }
+        .tz-search { background: transparent; border: none; color: var(--text); font-size: 0.7rem; width: 100%; text-align: center; border-bottom: 1px solid var(--border); margin-bottom: 5px; outline: none; }
 
-        /* World Clocks */
-        .sub-dials { display: flex; gap: 30px; margin-top: 30px; justify-content: center; transition: opacity 0.5s ease; }
-        .dial { position: relative; text-align: center; min-width: 100px; padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; }
-        .dial:hover { background: rgba(255,255,255,0.08); border-color: var(--accent); }
-        .tz-select { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10; }
-        .dial-time { font-size: 1.5rem; font-weight: 300; letter-spacing: 1px; color: var(--accent); opacity: 0.9; }
-        .dial-label { font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; color: #777; margin-top: 5px; }
-
-        /* Controls & Laps */
-        .tool-controls { display: none; gap: 15px; margin-top: 20px; justify-content: center; flex-wrap: wrap; }
-        .controls { position: absolute; bottom: 40px; display: flex; gap: 15px; z-index: 10; }
-        .btn-util { background: rgba(0,0,0,0.6); border: 1px solid #333; color: #888; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; transition: 0.3s; backdrop-filter: blur(5px); }
-        .btn-util:hover { border-color: var(--accent); color: var(--accent); }
-        .active-status { color: var(--accent) !important; border-color: var(--accent) !important; box-shadow: 0 0 15px rgba(212, 175, 55, 0.15); }
+        /* UTILITY */
+        .btn { background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 10px 20px; border-radius: 6px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; font-size: 0.7rem; transition: 0.2s; margin: 5px; }
+        .btn:hover { border-color: var(--accent); color: var(--accent); }
+        .btn-primary { background: var(--accent); color: #000; font-weight: bold; border: none; }
+        .input-box { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 10px; border-radius: 6px; font-size: 1rem; width: 100%; max-width: 250px; text-align: center; box-sizing: border-box; }
         
-        .laps-container { display: none; width: 100%; max-height: 100px; overflow-y: auto; margin-top: 20px; color: #888; font-family: monospace; font-size: 0.9rem; text-align: left; padding: 0 20px; box-sizing: border-box; }
-        .lap-item { display: flex; justify-content: space-between; border-bottom: 1px solid #222; padding: 5px 0; }
-        
-        /* Custom Timer Input */
-        .timer-input-group { display: none; margin-bottom: 15px; }
-        .timer-input { background: transparent; border: none; border-bottom: 2px solid #333; color: var(--ruby); font-size: 2rem; width: 80px; text-align: center; outline: none; margin: 0 10px; font-family: monospace; transition: 0.3s; }
-        .timer-input:focus { border-color: var(--ruby); }
+        .card { background: var(--panel); border: 1px solid var(--border); padding: 20px; border-radius: 12px; margin: 15px auto; max-width: 500px; text-align: left; position: relative; }
+        .card h3 { margin-top: 0; color: var(--accent); font-size: 0.9rem; letter-spacing: 2px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
 
-        /* Settings Modal */
-        #settings-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(10, 10, 10, 0.95); border: 1px solid #333; padding: 30px; border-radius: 20px; z-index: 1000; width: 280px; backdrop-filter: blur(15px); box-shadow: 0 0 50px rgba(0,0,0,0.9); }
-        .set-row { display: flex; justify-content: space-between; margin-bottom: 20px; align-items: center; color: #ccc; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; }
+        /* MULTI-TIMERS */
+        .timer-card { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--border); }
+        .timer-display { font-size: 2rem; font-variant-numeric: tabular-nums; color: var(--ruby); font-weight: bold; }
         
-        /* Custom Toggle Switch */
-        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 20px; }
-        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: #aaa; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--gold); }
-        input:checked + .slider:before { transform: translateX(20px); background-color: #000; }
+        /* ALARMS */
+        .days-selector label { font-size: 0.7rem; margin-right: 5px; color: #888; cursor: pointer; }
+        .days-selector input[type="checkbox"]:checked + span { color: var(--gold); font-weight: bold; }
 
-        @media (max-width: 700px) {
-            #time { font-size: 4rem; }
-            .sub-dials { gap: 10px; flex-wrap: wrap; }
-            .controls { flex-wrap: wrap; justify-content: center; padding: 0 20px; bottom: 20px; }
-        }
+        /* CONVERTER */
+        .slider-container { margin: 30px 0; }
+        input[type=range] { width: 100%; max-width: 500px; accent-color: var(--accent); }
+
+        /* SCROLLBARS */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+        @media (max-width: 600px) { .menu-btn { top: 10px; left: 10px; padding: 5px 10px; } .sidebar { width: 240px; } }
     </style>
 </head>
 <body>
 
-    <canvas id="ambientCanvas"></canvas>
+    <audio id="snd-beep" preload="auto"><source src="data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU" type="audio/wav"></audio>
 
-    <div class="top-nav">
-        <a href="/" class="home-btn"><img src="/logo1.png" alt="Home"></a>
-        <button class="settings-btn" onclick="toggleSettings()">⚙ Settings</button>
+    <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    <div class="sidebar" id="sidebar">
+        <a class="nav-item active" onclick="switchView('view-clock')">🕰️ Main Clock</a>
+        <a class="nav-item" onclick="switchView('view-converter')">🌍 TZ Converter</a>
+        <a class="nav-item" onclick="switchView('view-timer')">⏳ Multi-Timers</a>
+        <a class="nav-item" onclick="switchView('view-stopwatch')">⏱️ Stopwatch</a>
+        <a class="nav-item" onclick="switchView('view-alarm')">⏰ Alarms</a>
+        <a class="nav-item" onclick="switchView('view-date')">📅 Date Calc</a>
+        <a class="nav-item" onclick="switchView('view-realworld')">🌅 Global Data</a>
+        <a class="nav-item" onclick="switchView('view-settings')">⚙️ Settings</a>
+        <div style="flex:1"></div>
+        <a class="nav-item" onclick="toggleFullscreen()">🔲 Fullscreen</a>
     </div>
 
-    <div class="watch-face">
-        <div class="analog-clock" id="analogClock">
-            <div class="center-dot"></div>
-            <div class="hand hour-hand" id="hrHand"></div>
-            <div class="hand min-hand" id="minHand"></div>
-            <div class="hand sec-hand" id="secHand"></div>
-        </div>
-
-        <h1 id="time">00:00<span class="sec-text" id="sec-text">:00</span><span class="ampm-text" id="ampm-text"></span></h1>
+    <div class="main-content">
         
-        <div class="timer-input-group" id="timerInputs">
-            <input type="number" id="t-mins" class="timer-input" value="25" min="1" max="999"> <span style="color:#555">MIN</span>
+        <div id="view-clock" class="view-section active">
+            <div class="analog-container" id="analog-clock">
+                <div class="center-dot"></div>
+                <div class="hand hour-hand" id="hr-hand"></div>
+                <div class="hand min-hand" id="min-hand"></div>
+                <div class="hand sec-hand" id="sec-hand"></div>
+            </div>
+            <h1 id="time">00:00<span class="sec-text" id="sec-text">:00</span></h1>
+            <div id="date">Loading...</div>
+            <div id="utc-display" style="font-size:0.7rem; color:#666; margin-top:5px; font-family:monospace;">UTC: --:--</div>
+            
+            <div class="dials-grid" id="dials-container"></div>
+            <button class="btn" onclick="addDial()" style="margin-top:20px;">+ Add World Clock</button>
+            <datalist id="tz-datalist"></datalist>
         </div>
 
-        <div id="date">CALCCLOCK CHRONOMETER</div>
-
-        <div class="sub-dials" id="subDials"></div>
-
-        <div class="tool-controls" id="toolControls">
-            <button class="btn-util" id="btn-action">START</button>
-            <button class="btn-util" id="btn-lap" style="display:none;">LAP</button>
-            <button class="btn-util" id="btn-reset">RESET</button>
-            <button class="btn-util" id="btn-exit" style="border-color: #555; color: #ccc;">EXIT</button>
+        <div id="view-converter" class="view-section">
+            <h2 style="color:var(--accent); text-transform:uppercase; letter-spacing:3px;">Timezone Converter</h2>
+            <div class="slider-container">
+                <input type="range" id="tz-slider" min="0" max="24" value="12" step="0.5" oninput="updateConverter()">
+                <div id="slider-val" style="margin-top:10px; font-size:1.5rem; font-weight:bold;">12:00 PM (Local)</div>
+            </div>
+            <div class="dials-grid" id="converter-results"></div>
         </div>
 
-        <div class="laps-container" id="lapsContainer"></div>
+        <div id="view-timer" class="view-section">
+            <h2 style="color:var(--ruby); text-transform:uppercase; letter-spacing:3px;">Concurrent Timers</h2>
+            <div class="card" style="text-align:center;">
+                <input type="number" id="new-timer-min" class="input-box" placeholder="Minutes" style="width:100px;">
+                <button class="btn btn-primary" onclick="addTimer()">+ Add Timer</button>
+                <div style="margin-top:10px;">
+                    <button class="btn" onclick="addTimer(5)">5m</button>
+                    <button class="btn" onclick="addTimer(15)">15m</button>
+                    <button class="btn" onclick="addTimer(25)">25m (Pomo)</button>
+                </div>
+            </div>
+            <div class="card" id="timers-list" style="background:transparent; border:none; padding:0;"></div>
+        </div>
+
+        <div id="view-stopwatch" class="view-section">
+            <h2 style="color:var(--sapphire); text-transform:uppercase; letter-spacing:3px;">Precision Stopwatch</h2>
+            <h1 id="sw-display" style="font-size: 4rem; margin:20px 0; font-variant-numeric:tabular-nums;">00:00.00</h1>
+            <div>
+                <button class="btn btn-primary" id="sw-action" onclick="toggleStopwatch()">START</button>
+                <button class="btn" onclick="lapStopwatch()">LAP</button>
+                <button class="btn" onclick="resetStopwatch()">RESET</button>
+            </div>
+            <div class="card" id="laps-card" style="max-height: 300px; overflow-y:auto; display:none;">
+                <h3>Lap History</h3>
+                <div id="laps-list" style="font-family:monospace; font-size:1.1rem; color:#aaa;"></div>
+            </div>
+        </div>
+
+        <div id="view-alarm" class="view-section">
+            <h2 style="color:var(--gold); text-transform:uppercase; letter-spacing:3px;">Smart Alarms</h2>
+            <div class="card">
+                <input type="time" id="alarm-time" class="input-box">
+                <input type="text" id="alarm-label" class="input-box" placeholder="Label (e.g. Meeting)" style="margin-top:10px;">
+                <div class="days-selector" style="margin-top:15px; display:flex; justify-content:space-between;">
+                    <label><input type="checkbox" class="al-day" value="0"><span>Su</span></label>
+                    <label><input type="checkbox" class="al-day" value="1"><span>Mo</span></label>
+                    <label><input type="checkbox" class="al-day" value="2"><span>Tu</span></label>
+                    <label><input type="checkbox" class="al-day" value="3"><span>We</span></label>
+                    <label><input type="checkbox" class="al-day" value="4"><span>Th</span></label>
+                    <label><input type="checkbox" class="al-day" value="5"><span>Fr</span></label>
+                    <label><input type="checkbox" class="al-day" value="6"><span>Sa</span></label>
+                </div>
+                <button class="btn btn-primary" onclick="addAlarm()" style="margin-top:15px; width:100%;">+ Set Alarm</button>
+            </div>
+            <div class="card" id="alarms-list"></div>
+        </div>
+
+        <div id="view-date" class="view-section">
+            <h2 style="color:var(--accent); text-transform:uppercase; letter-spacing:3px;">Date Intelligence</h2>
+            <div class="card">
+                <h3>Day Counter</h3>
+                <input type="date" id="date1" class="input-box" style="margin-bottom:10px;">
+                <input type="date" id="date2" class="input-box">
+                <button class="btn" onclick="calculateDateDiff()" style="margin-top:10px; width:100%;">Calculate Difference</button>
+                <div id="date-diff-res" style="margin-top:15px; font-size:1.2rem; font-weight:bold; color:var(--accent); text-align:center;"></div>
+            </div>
+            <div class="card">
+                <h3>Today's Metrics</h3>
+                <div id="today-metrics" style="line-height:2; font-size:1.1rem;"></div>
+            </div>
+        </div>
+
+        <div id="view-realworld" class="view-section">
+            <h2 style="color:var(--accent); text-transform:uppercase; letter-spacing:3px;">Global Solar Data</h2>
+            <div class="card">
+                <input type="text" id="solar-search" list="tz-datalist" class="input-box" placeholder="Search City..." onchange="fetchSolarData()">
+                <div id="solar-results" style="margin-top:20px; display:none; line-height:1.8;">
+                    <p>Sunrise: <strong id="sun-rise" style="color:var(--gold)">--</strong></p>
+                    <p>Sunset: <strong id="sun-set" style="color:#ff7e67">--</strong></p>
+                    <p>Day Length: <strong id="sun-length">--</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-settings" class="view-section">
+            <h2 style="color:var(--accent); text-transform:uppercase; letter-spacing:3px;">Preferences</h2>
+            <div class="card">
+                <div style="margin-bottom:15px;"><label><input type="checkbox" id="set-light" onchange="saveConfig()"> Light Mode</label></div>
+                <div style="margin-bottom:15px;"><label><input type="checkbox" id="set-24h" onchange="saveConfig()"> 24-Hour Format</label></div>
+                <div style="margin-bottom:15px;"><label><input type="checkbox" id="set-sec" onchange="saveConfig()"> Show Seconds</label></div>
+                <div style="margin-bottom:15px;"><label><input type="checkbox" id="set-analog" onchange="saveConfig()"> Analog Clock Face</label></div>
+                <hr style="border-color:var(--border); margin:20px 0;">
+                <button class="btn" onclick="toggleWakeLock()" id="wake-btn" style="width:100%;">WakeLock (Keep Screen On): OFF</button>
+                <button class="btn" onclick="requestNotif()" style="width:100%; margin-top:10px;">Enable Push Notifications</button>
+            </div>
+        </div>
     </div>
 
-    <div class="controls" id="mainControls">
-        <button class="btn-util" id="swBtn">Stopwatch</button>
-        <button class="btn-util" id="timerBtn">Custom Timer</button>
-        <button class="btn-util" id="wakeBtn">Stay Awake: OFF</button>
-        <button class="btn-util" id="fsBtn">Fullscreen</button>
-    </div>
-
-    <div id="settings-modal">
-        <h3 style="color:var(--gold); margin-top:0; letter-spacing: 2px;">PREFERENCES</h3>
-        <div class="set-row">
-            <span>24-Hour Format</span>
-            <label class="switch"><input type="checkbox" id="set-24h" onchange="saveSettings()"><span class="slider"></span></label>
-        </div>
-        <div class="set-row">
-            <span>Show Seconds</span>
-            <label class="switch"><input type="checkbox" id="set-sec" onchange="saveSettings()"><span class="slider"></span></label>
-        </div>
-        <div class="set-row">
-            <span>Analog Clock</span>
-            <label class="switch"><input type="checkbox" id="set-analog" onchange="saveSettings()"><span class="slider"></span></label>
-        </div>
-        <button class="btn-util" style="width: 100%; margin-top: 10px;" onclick="toggleSettings()">CLOSE & SAVE</button>
+    <div id="alarm-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:var(--panel); border:2px solid var(--ruby); padding:30px; border-radius:15px; z-index:9999; text-align:center; box-shadow:0 0 50px rgba(155,17,30,0.5);">
+        <h1 style="color:var(--ruby); margin:0;">ALARM</h1>
+        <p id="alarm-modal-label" style="font-size:1.2rem; color:var(--text);"></p>
+        <button class="btn btn-primary" onclick="stopAlarmModal()" style="margin-top:20px; font-size:1.2rem; padding:15px 30px;">STOP</button>
+        <button class="btn" onclick="snoozeAlarm()" style="margin-top:20px; font-size:1.2rem; padding:15px 30px;">SNOOZE 5m</button>
     </div>
 
     <script>
-        // --- 1. SETTINGS & LOCAL STORAGE ENGINE ---
-        let appSettings = JSON.parse(localStorage.getItem('calcClockProSettings')) || {
-            format24: false, showSeconds: true, isAnalog: false,
-            zones: ['America/New_York', 'Europe/London', 'Asia/Kolkata', 'Asia/Tokyo']
+        /* =========================================
+           1. CORE DATA, INIT & STATE
+           ========================================= */
+        const tzDB = [
+            { id: 'Etc/UTC', name: 'UTC / GMT', offset: 0, lat: 51.48, lng: 0.00 },
+            { id: 'America/New_York', name: 'New York (EST)', offset: -5, lat: 40.71, lng: -74.00 },
+            { id: 'America/Chicago', name: 'Chicago (CST)', offset: -6, lat: 41.87, lng: -87.62 },
+            { id: 'America/Denver', name: 'Denver (MST)', offset: -7, lat: 39.73, lng: -104.99 },
+            { id: 'America/Los_Angeles', name: 'Los Angeles (PST)', offset: -8, lat: 34.05, lng: -118.24 },
+            { id: 'America/Anchorage', name: 'Alaska (AKST)', offset: -9, lat: 61.21, lng: -149.90 },
+            { id: 'Pacific/Honolulu', name: 'Hawaii (HST)', offset: -10, lat: 21.30, lng: -157.85 },
+            { id: 'America/Toronto', name: 'Toronto', offset: -5, lat: 43.65, lng: -79.38 },
+            { id: 'America/Mexico_City', name: 'Mexico City', offset: -6, lat: 19.43, lng: -99.13 },
+            { id: 'America/Sao_Paulo', name: 'Sao Paulo', offset: -3, lat: -23.55, lng: -46.63 },
+            { id: 'America/Buenos_Aires', name: 'Buenos Aires', offset: -3, lat: -34.60, lng: -58.38 },
+            { id: 'Europe/London', name: 'London (GMT)', offset: 0, lat: 51.50, lng: -0.12 },
+            { id: 'Europe/Paris', name: 'Paris (CET)', offset: 1, lat: 48.85, lng: 2.35 },
+            { id: 'Europe/Berlin', name: 'Berlin', offset: 1, lat: 52.52, lng: 13.40 },
+            { id: 'Europe/Rome', name: 'Rome', offset: 1, lat: 41.90, lng: 12.49 },
+            { id: 'Europe/Moscow', name: 'Moscow (MSK)', offset: 3, lat: 55.75, lng: 37.61 },
+            { id: 'Africa/Cairo', name: 'Cairo', offset: 2, lat: 30.04, lng: 31.23 },
+            { id: 'Africa/Johannesburg', name: 'Johannesburg', offset: 2, lat: -26.20, lng: 28.04 },
+            { id: 'Asia/Jerusalem', name: 'Jerusalem', offset: 2, lat: 31.76, lng: 35.21 },
+            { id: 'Asia/Dubai', name: 'Dubai (GST)', offset: 4, lat: 25.20, lng: 55.27 },
+            { id: 'Asia/Kabul', name: 'Kabul', offset: 4.5, lat: 34.52, lng: 69.17 },
+            { id: 'Asia/Karachi', name: 'Karachi (PKT)', offset: 5, lat: 24.86, lng: 67.00 },
+            { id: 'Asia/Kolkata', name: 'India (IST)', offset: 5.5, lat: 28.61, lng: 77.20 },
+            { id: 'Asia/Dhaka', name: 'Dhaka', offset: 6, lat: 23.81, lng: 90.41 },
+            { id: 'Asia/Bangkok', name: 'Bangkok', offset: 7, lat: 13.75, lng: 100.50 },
+            { id: 'Asia/Singapore', name: 'Singapore', offset: 8, lat: 1.35, lng: 103.81 },
+            { id: 'Asia/Shanghai', name: 'Beijing/Shanghai', offset: 8, lat: 31.23, lng: 121.47 },
+            { id: 'Asia/Tokyo', name: 'Tokyo (JST)', offset: 9, lat: 35.67, lng: 139.65 },
+            { id: 'Asia/Seoul', name: 'Seoul', offset: 9, lat: 37.56, lng: 126.97 },
+            { id: 'Australia/Sydney', name: 'Sydney (AEST)', offset: 10, lat: -33.86, lng: 151.20 },
+            { id: 'Pacific/Auckland', name: 'Auckland', offset: 12, lat: -36.84, lng: 174.76 }
+        ];
+
+        let config = JSON.parse(localStorage.getItem('ccProData')) || {
+            lightMode: false, format24: false, showSec: true, analog: false,
+            dials: ['America/New_York', 'Europe/London', 'Asia/Tokyo'],
+            alarms: [], timers: [], laps: []
         };
 
-        document.getElementById('set-24h').checked = appSettings.format24;
-        document.getElementById('set-sec').checked = appSettings.showSeconds;
-        document.getElementById('set-analog').checked = appSettings.isAnalog;
+        // Populate Datalist for Search
+        const datalist = document.getElementById('tz-datalist');
+        tzDB.forEach(t => datalist.innerHTML += `<option value="${t.id}">${t.name} (UTC${t.offset >= 0 ? '+'+t.offset : t.offset})</option>`);
 
-        function saveSettings() {
-            appSettings.format24 = document.getElementById('set-24h').checked;
-            appSettings.showSeconds = document.getElementById('set-sec').checked;
-            appSettings.isAnalog = document.getElementById('set-analog').checked;
-            localStorage.setItem('calcClockProSettings', JSON.stringify(appSettings));
-            updateClockUI();
+        function saveConfig() {
+            config.lightMode = document.getElementById('set-light').checked;
+            config.format24 = document.getElementById('set-24h').checked;
+            config.showSec = document.getElementById('set-sec').checked;
+            config.analog = document.getElementById('set-analog').checked;
+            localStorage.setItem('ccProData', JSON.stringify(config));
+            applyTheme();
         }
 
-        function toggleSettings() {
-            const modal = document.getElementById('settings-modal');
-            modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
+        function applyTheme() {
+            document.getElementById('set-light').checked = config.lightMode;
+            document.getElementById('set-24h').checked = config.format24;
+            document.getElementById('set-sec').checked = config.showSec;
+            document.getElementById('set-analog').checked = config.analog;
+            
+            document.body.setAttribute('data-theme', config.lightMode ? 'light' : 'dark');
+            document.getElementById('analog-clock').style.display = config.analog ? 'block' : 'none';
+            document.getElementById('time').style.display = config.analog ? 'none' : 'block';
+            document.getElementById('sec-text').style.display = config.showSec ? 'inline' : 'none';
+        }
+        applyTheme();
+
+        // Audio & Notifications
+        let audioUnlocked = false;
+        function unlockAudio() {
+            if(audioUnlocked) return;
+            const osc = new (window.AudioContext || window.webkitAudioContext)();
+            osc.resume(); audioUnlocked = true;
+        }
+        document.body.addEventListener('touchstart', unlockAudio, {once:true});
+        document.body.addEventListener('click', unlockAudio, {once:true});
+
+        let activeOsc = null, audioCtx = null;
+        function playAlarmSound() {
+            try {
+                if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if(activeOsc) return; // already playing
+                activeOsc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                activeOsc.connect(gain); gain.connect(audioCtx.destination);
+                activeOsc.type = 'square';
+                
+                // Beep pattern
+                gain.gain.setValueAtTime(0, audioCtx.currentTime);
+                for(let i=0; i<10; i++) {
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime + i*0.5);
+                    gain.gain.setValueAtTime(0, audioCtx.currentTime + i*0.5 + 0.2);
+                }
+                activeOsc.start(); activeOsc.stop(audioCtx.currentTime + 5);
+                setTimeout(() => activeOsc = null, 5000);
+            } catch(e) { console.log("Audio blocked"); }
+        }
+        function stopAlarmSound() {
+            if(activeOsc) { activeOsc.stop(); activeOsc = null; }
         }
 
-        function updateClockUI() {
-            document.getElementById('analogClock').style.display = appSettings.isAnalog && currentMode === 'clock' ? 'block' : 'none';
-            document.getElementById('time').style.display = appSettings.isAnalog && currentMode === 'clock' ? 'none' : 'block';
-            document.getElementById('sec-text').style.display = appSettings.showSeconds ? 'inline' : 'none';
-            updateClock();
+        function requestNotif() {
+            if("Notification" in window) {
+                Notification.requestPermission().then(p => alert("Notifications: " + p));
+            } else alert("Push not supported on this browser.");
+        }
+        function sendNotif(title, body) {
+            if("Notification" in window && Notification.permission === "granted") {
+                new Notification(title, {body: body, icon: '/logo1.png'});
+            }
         }
 
-        // --- 2. AMBIENT BACKGROUND ---
-        const canvas = document.getElementById('ambientCanvas');
-        const ctx = canvas.getContext('2d');
-        let particles = [], mouse = { x: -100, y: -100 };
-        function initCanvas() {
-            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-            particles = [];
-            for(let i=0; i<80; i++) particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, size: Math.random()*1.5, speedX: (Math.random()-0.5)*0.2, speedY: (Math.random()-0.5)*0.2 });
+        /* =========================================
+           2. UI NAVIGATION
+           ========================================= */
+        function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); }
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section, .nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            event.target.classList.add('active');
+            toggleMenu();
+            if(viewId === 'view-converter') updateConverter();
+            if(viewId === 'view-timer') renderTimers();
+            if(viewId === 'view-stopwatch') renderLaps();
+            if(viewId === 'view-alarm') renderAlarms();
         }
-        function drawAmbient() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent');
-            ctx.globalAlpha = 0.15;
-            particles.forEach(p => {
-                ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
-                p.x += p.speedX + (mouse.x - canvas.width/2)*0.001; p.y += p.speedY + (mouse.y - canvas.height/2)*0.001;
-                if(p.x < 0) p.x = canvas.width; if(p.x > canvas.width) p.x = 0;
-                if(p.y < 0) p.y = canvas.height; if(p.y > canvas.height) p.y = 0;
-            });
-            requestAnimationFrame(drawAmbient);
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+            else document.exitFullscreen();
+            toggleMenu();
         }
-        window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
-        window.addEventListener('resize', initCanvas);
-        initCanvas(); drawAmbient();
 
-        // --- 3. WORLD CLOCK DATABASE ---
-        const tzList = [
-            { id: 'America/Los_Angeles', name: 'USA (PST)' }, { id: 'America/Chicago', name: 'USA (CST)' },
-            { id: 'America/New_York', name: 'USA (EST)' }, { id: 'America/Toronto', name: 'Canada' },
-            { id: 'America/Sao_Paulo', name: 'Brazil' }, { id: 'Europe/London', name: 'UK (London)' },
-            { id: 'Europe/Paris', name: 'France' }, { id: 'Europe/Berlin', name: 'Germany' },
-            { id: 'Europe/Moscow', name: 'Russia' }, { id: 'Africa/Cairo', name: 'Egypt' },
-            { id: 'Asia/Dubai', name: 'UAE (Dubai)' }, { id: 'Asia/Kolkata', name: 'India (IST)' },
-            { id: 'Asia/Bangkok', name: 'Thailand' }, { id: 'Asia/Shanghai', name: 'China' },
-            { id: 'Asia/Tokyo', name: 'Japan (Tokyo)' }, { id: 'Australia/Sydney', name: 'Australia' }
-        ].sort((a, b) => a.name.localeCompare(b.name));
-
-        const subDialsContainer = document.getElementById('subDials');
-
+        /* =========================================
+           3. MAIN CLOCK & WORLD DIALS
+           ========================================= */
         function buildDials() {
-            subDialsContainer.innerHTML = '';
-            let optionsHTML = tzList.map(tz => `<option value="${tz.id}">${tz.name}</option>`).join('');
-
-            appSettings.zones.forEach((zoneId, index) => {
-                let tzData = tzList.find(t => t.id === zoneId) || tzList[0];
-                let dial = document.createElement('div');
-                dial.className = 'dial';
-                dial.innerHTML = `
-                    <select class="tz-select" data-index="${index}">${optionsHTML}</select>
-                    <div class="dial-time" id="dial-time-${index}">00:00</div>
-                    <div class="dial-label" id="dial-label-${index}">${tzData.name} ▾</div>
+            const container = document.getElementById('dials-container');
+            container.innerHTML = '';
+            config.dials.forEach((zone, idx) => {
+                let tzData = tzDB.find(t => t.id === zone) || {name: zone, id: zone};
+                let div = document.createElement('div');
+                div.className = 'dial';
+                div.innerHTML = `
+                    <input type="text" class="tz-search" value="${tzData.id}" list="tz-datalist" placeholder="Search...">
+                    <div class="dial-time" id="dt-${idx}">--:--</div>
+                    <div class="dial-label">${tzData.name.split(' ')[0]} <span class="dial-dst" id="dst-${idx}"></span></div>
+                    <button class="remove-dial" onclick="removeDial(${idx})">X</button>
                 `;
-                dial.querySelector('select').value = zoneId;
-                dial.querySelector('select').addEventListener('change', (e) => {
-                    appSettings.zones[index] = e.target.value;
-                    localStorage.setItem('calcClockProSettings', JSON.stringify(appSettings));
-                    document.getElementById(`dial-label-${index}`).innerHTML = `${tzList.find(t => t.id === e.target.value).name} ▾`;
-                    updateClock();
+                div.querySelector('input').addEventListener('change', (e) => {
+                    if(tzDB.find(t=>t.id===e.target.value)) {
+                        config.dials[idx] = e.target.value;
+                        saveConfig(); buildDials();
+                    }
                 });
-                subDialsContainer.appendChild(dial);
+                container.appendChild(div);
             });
         }
+
+        function addDial() { if(config.dials.length >= 10) return alert("Max 10 dials."); config.dials.push('Etc/UTC'); saveConfig(); buildDials(); }
+        function removeDial(idx) { config.dials.splice(idx, 1); saveConfig(); buildDials(); }
         buildDials();
 
-        // --- 4. CORE APP LOGIC & TOOLS ---
-        const timeEl = document.getElementById('time');
-        const dateEl = document.getElementById('date');
-        const toolControls = document.getElementById('toolControls');
-        const mainControls = document.getElementById('mainControls');
-        const btnAction = document.getElementById('btn-action');
-        const btnReset = document.getElementById('btn-reset');
-        const btnExit = document.getElementById('btn-exit');
-        const btnLap = document.getElementById('btn-lap');
-        const lapsContainer = document.getElementById('lapsContainer');
-        const timerInputs = document.getElementById('timerInputs');
+        /* =========================================
+           4. TIMEZONE CONVERTER
+           ========================================= */
+        function updateConverter() {
+            const val = parseFloat(document.getElementById('tz-slider').value);
+            let hr = Math.floor(val); let min = (val % 1 === 0.5) ? '30' : '00';
+            let ampm = hr >= 12 && hr < 24 ? 'PM' : 'AM';
+            let hr12 = hr % 12 || 12;
+            document.getElementById('slider-val').innerText = `${hr12}:${min} ${ampm} (Local)`;
 
-        let currentMode = 'clock'; 
-        let timerTime = 25 * 60, timerRunning = false, timerInterval;
-        let swTime = 0, swRunning = false, swInterval, swStartTime = 0;
-        let lapCount = 1;
-
-        // BROWSER-SAFE AUDIO SYSTEM (Ensures Safari/iOS compatibility)
-        let audioCtx;
-        function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-        }
-
-        function playBeep() {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            osc.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(880, audioCtx.currentTime); 
-            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.8);
-        }
-
-        function setMode(mode) {
-            currentMode = mode;
-            lapsContainer.style.display = 'none';
-            btnLap.style.display = 'none';
-            timerInputs.style.display = 'none';
-            document.getElementById('sec-text').style.display = appSettings.showSeconds ? 'inline' : 'none';
-            document.getElementById('ampm-text').style.display = 'none';
+            const res = document.getElementById('converter-results');
+            res.innerHTML = '';
+            const localOff = -(new Date().getTimezoneOffset() / 60);
             
-            if(mode === 'clock') {
-                subDialsContainer.style.display = 'flex';
-                toolControls.style.display = 'none';
-                mainControls.style.display = 'flex';
-                document.documentElement.style.setProperty('--accent', 'var(--gold)');
-                dateEl.style.color = '#555';
-                updateClockUI();
-            } else {
-                document.getElementById('analogClock').style.display = 'none';
-                document.getElementById('time').style.display = 'block';
-                subDialsContainer.style.display = 'none';
-                toolControls.style.display = 'flex';
-                mainControls.style.display = 'none';
+            config.dials.forEach(zone => {
+                let tzData = tzDB.find(t => t.id === zone);
+                if(!tzData) return;
                 
-                if(mode === 'timer') {
-                    document.documentElement.style.setProperty('--accent', 'var(--ruby)');
-                    dateEl.innerText = "CUSTOM TIMER";
-                    dateEl.style.color = 'var(--ruby)';
-                    timerInputs.style.display = timerRunning ? 'none' : 'block';
-                    btnAction.innerText = timerRunning ? "PAUSE" : "START";
-                    updateTimerDisplay();
-                } else if (mode === 'stopwatch') {
-                    document.documentElement.style.setProperty('--accent', 'var(--sapphire)');
-                    dateEl.innerText = "PRECISION STOPWATCH";
-                    dateEl.style.color = 'var(--sapphire)';
-                    btnLap.style.display = 'inline-block';
-                    lapsContainer.style.display = 'block';
-                    btnAction.innerText = swRunning ? "PAUSE" : "START";
-                    updateSwDisplay();
-                }
-            }
+                // Get accurate current offset handling DST
+                let dateStr = new Date().toLocaleString("en-US", {timeZone: zone, timeZoneName: "shortOffset"});
+                let gmtMatch = dateStr.match(/GMT([+-]\d+)?/);
+                let targetOff = gmtMatch && gmtMatch[1] ? parseInt(gmtMatch[1]) : 0;
+                
+                let diffHours = targetOff - localOff;
+                let targetTime = val + diffHours;
+                if(targetTime < 0) targetTime += 24;
+                if(targetTime >= 24) targetTime -= 24;
+                
+                let tHr = Math.floor(targetTime);
+                let tMin = (targetTime % 1 === 0.5) ? '30' : '00';
+                let tAmpm = tHr >= 12 ? 'PM' : 'AM';
+                let tHr12 = tHr % 12 || 12;
+                let sign = diffHours > 0 ? '+' : '';
+
+                res.innerHTML += `
+                    <div class="dial" style="min-width:160px;">
+                        <div class="dial-time">${tHr12}:${tMin} <span style="font-size:0.8rem">${tAmpm}</span></div>
+                        <div class="dial-label">${tzData.name}</div>
+                        <div style="font-size:0.65rem; color:var(--sapphire); margin-top:5px; font-weight:bold;">${sign}${diffHours} HRS DIFF</div>
+                    </div>`;
+            });
         }
 
-        btnAction.addEventListener('click', () => {
-            initAudio(); // Unlocks audio engine on direct user gesture
+        /* =========================================
+           5. MULTI-TIMERS
+           ========================================= */
+        function addTimer(mins = null) {
+            let val = mins || parseInt(document.getElementById('new-timer-min').value);
+            if(isNaN(val) || val < 1) return;
+            config.timers.push({ id: Date.now(), total: val*60, rem: val*60, run: false, loop: false });
+            saveConfig(); renderTimers();
+        }
+        function toggleTmr(id) {
+            let t = config.timers.find(x => x.id === id);
+            if(t) { t.run = !t.run; saveConfig(); renderTimers(); }
+        }
+        function resetTmr(id) {
+            let t = config.timers.find(x => x.id === id);
+            if(t) { t.run = false; t.rem = t.total; saveConfig(); renderTimers(); }
+        }
+        function toggleLoop(id) {
+            let t = config.timers.find(x => x.id === id);
+            if(t) { t.loop = !t.loop; saveConfig(); renderTimers(); }
+        }
+        function delTmr(id) {
+            config.timers = config.timers.filter(x => x.id !== id);
+            saveConfig(); renderTimers();
+        }
+        function renderTimers() {
+            const list = document.getElementById('timers-list');
+            list.innerHTML = '';
+            config.timers.forEach(t => {
+                let m = Math.floor(t.rem/60).toString().padStart(2,'0');
+                let s = (t.rem%60).toString().padStart(2,'0');
+                list.innerHTML += `
+                    <div class="timer-card">
+                        <div class="timer-display">${m}:${s}</div>
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <div>
+                                <button class="btn ${t.run?'':'btn-primary'}" onclick="toggleTmr(${t.id})" style="padding:5px 10px;">${t.run?'PAUSE':'START'}</button>
+                                <button class="btn" onclick="resetTmr(${t.id})" style="padding:5px 10px;">RST</button>
+                                <button class="btn" onclick="delTmr(${t.id})" style="padding:5px 10px; color:var(--ruby);">X</button>
+                            </div>
+                            <label style="font-size:0.7rem; color:#888;"><input type="checkbox" ${t.loop?'checked':''} onchange="toggleLoop(${t.id})"> Loop</label>
+                        </div>
+                    </div>
+                `;
+            });
+        }
 
-            if(currentMode === 'timer') {
-                if(!timerRunning) {
-                    // FIX: Safe parsing for empty timer inputs
-                    let inputVal = parseInt(document.getElementById('t-mins').value);
-                    if (isNaN(inputVal) || inputVal < 1) {
-                        inputVal = 25; // Default fallback
-                        document.getElementById('t-mins').value = 25;
-                    }
-                    if(timerTime === 25 * 60 || inputVal * 60 !== timerTime) {
-                        timerTime = inputVal * 60;
-                    }
-                    timerInputs.style.display = 'none';
-                }
-                timerRunning = !timerRunning;
-                btnAction.innerText = timerRunning ? "PAUSE" : "START";
-                
-                if(timerRunning) {
-                    timerInterval = setInterval(() => {
-                        timerTime--;
-                        if(timerTime <= 0) {
-                            clearInterval(timerInterval);
-                            timerRunning = false;
-                            btnAction.innerText = "START";
-                            timerInputs.style.display = 'block';
-                            playBeep();
-                            alert("TIMER COMPLETE!");
-                            timerTime = parseInt(document.getElementById('t-mins').value) * 60;
-                        }
-                        updateTimerDisplay();
-                    }, 1000);
-                } else clearInterval(timerInterval);
-            } 
-            else if (currentMode === 'stopwatch') {
-                swRunning = !swRunning;
-                btnAction.innerText = swRunning ? "PAUSE" : "START";
-                if(swRunning) {
-                    swStartTime = Date.now() - swTime;
-                    swInterval = setInterval(() => {
-                        swTime = Date.now() - swStartTime;
-                        updateSwDisplay();
-                    }, 10);
-                } else clearInterval(swInterval);
-            }
-        });
-
-        btnLap.addEventListener('click', () => {
-            if(swRunning) {
-                let div = document.createElement('div');
-                div.className = 'lap-item';
-                div.innerHTML = `<span>Lap ${lapCount}</span><span>${formatTime(swTime)}</span>`;
-                lapsContainer.prepend(div);
-                lapCount++;
-            }
-        });
-
-        btnReset.addEventListener('click', () => {
-            if(currentMode === 'timer') {
-                clearInterval(timerInterval);
-                timerRunning = false;
-                
-                let inputVal = parseInt(document.getElementById('t-mins').value);
-                if (isNaN(inputVal) || inputVal < 1) inputVal = 25;
-                
-                timerTime = inputVal * 60;
-                btnAction.innerText = "START";
-                timerInputs.style.display = 'block';
-                updateTimerDisplay();
-            } else if (currentMode === 'stopwatch') {
-                clearInterval(swInterval);
-                swRunning = false;
-                swTime = 0;
-                lapCount = 1;
-                lapsContainer.innerHTML = '';
-                btnAction.innerText = "START";
-                updateSwDisplay();
-            }
-        });
-
-        btnExit.addEventListener('click', () => setMode('clock'));
-
-        function formatTime(msTime) {
-            let totalSecs = Math.floor(msTime / 1000);
-            let m = Math.floor(totalSecs / 60).toString().padStart(2, '0');
-            let s = (totalSecs % 60).toString().padStart(2, '0');
+        /* =========================================
+           6. STOPWATCH & LAPS
+           ========================================= */
+        let swTime = 0, swRun = false, swStart = 0;
+        function toggleStopwatch() {
+            swRun = !swRun;
+            document.getElementById('sw-action').innerText = swRun ? "PAUSE" : "START";
+            if(swRun) swStart = Date.now() - swTime;
+        }
+        function lapStopwatch() {
+            if(!swRun) return;
+            config.laps.unshift(swTime); // save to memory
+            saveConfig(); renderLaps();
+        }
+        function resetStopwatch() {
+            swRun = false; swTime = 0; config.laps = [];
+            document.getElementById('sw-action').innerText = "START";
+            saveConfig(); renderLaps();
+        }
+        function formatSw(msTime) {
+            let m = Math.floor(msTime / 60000).toString().padStart(2, '0');
+            let s = Math.floor((msTime % 60000) / 1000).toString().padStart(2, '0');
             let ms = Math.floor((msTime % 1000) / 10).toString().padStart(2, '0');
             return `${m}:${s}.${ms}`;
         }
-
-        function updateTimerDisplay() {
-            let m = Math.floor(timerTime / 60).toString().padStart(2, '0');
-            let s = (timerTime % 60).toString().padStart(2, '0');
-            timeEl.innerHTML = `${m}<span class="sec-text">:${s}</span>`;
+        function renderLaps() {
+            const list = document.getElementById('laps-list');
+            const card = document.getElementById('laps-card');
+            if(config.laps.length > 0) {
+                card.style.display = 'block';
+                list.innerHTML = config.laps.map((l, i) => `<div style="border-bottom:1px solid var(--border); padding:5px 0; display:flex; justify-content:space-between;"><span>Lap ${config.laps.length - i}</span><span style="color:var(--accent)">${formatSw(l)}</span></div>`).join('');
+            } else card.style.display = 'none';
         }
 
-        function updateSwDisplay() {
-            let formatted = formatTime(swTime).split('.');
-            timeEl.innerHTML = `${formatted[0]}<span class="sec-text">.${formatted[1]}</span>`;
-        }
-
-        function updateClock() {
-            if(currentMode !== 'clock') return;
-            const now = new Date();
+        /* =========================================
+           7. SMART ALARMS
+           ========================================= */
+        let snoozedAlarms = [];
+        function addAlarm() {
+            let t = document.getElementById('alarm-time').value;
+            let lbl = document.getElementById('alarm-label').value || "Alarm";
+            let days = Array.from(document.querySelectorAll('.al-day:checked')).map(cb => parseInt(cb.value));
+            if(!t) return alert("Select time.");
             
-            // Analog Logic
-            if(appSettings.isAnalog) {
-                let hr = now.getHours() % 12;
-                let min = now.getMinutes();
-                let sec = now.getSeconds();
-                document.getElementById('hrHand').style.transform = `translateX(-50%) rotate(${(hr * 30) + (min * 0.5)}deg)`;
-                document.getElementById('minHand').style.transform = `translateX(-50%) rotate(${min * 6}deg)`;
-                document.getElementById('secHand').style.transform = `translateX(-50%) rotate(${sec * 6}deg)`;
-            } 
-            // Digital Logic
-            else {
-                let opts = { hour: '2-digit', minute: '2-digit', hour12: !appSettings.format24 };
-                let timeString = now.toLocaleTimeString('en-US', opts); 
-                
-                let timeParts = timeString.split(' ');
-                let baseTime = timeParts[0];
-                let ampm = timeParts[1] || '';
-
-                let displayStr = baseTime;
-                if(appSettings.showSeconds) {
-                    displayStr += `<span class="sec-text">:${now.getSeconds().toString().padStart(2, '0')}</span>`;
-                }
-                if(!appSettings.format24) {
-                    displayStr += `<span class="ampm-text">${ampm}</span>`;
-                }
-                timeEl.innerHTML = displayStr;
-            }
-
-            dateEl.innerText = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
-
-            appSettings.zones.forEach((zone, i) => {
-                let el = document.getElementById(`dial-time-${i}`);
-                if(el) el.innerText = now.toLocaleTimeString('en-GB', { hour12: !appSettings.format24, hour: '2-digit', minute: '2-digit', timeZone: zone });
+            config.alarms.push({ id: Date.now(), time: t, label: lbl, days: days, active: true });
+            saveConfig(); renderAlarms();
+        }
+        function toggleAlarm(id) {
+            let a = config.alarms.find(x => x.id === id);
+            if(a) { a.active = !a.active; saveConfig(); renderAlarms(); }
+        }
+        function delAlarm(id) {
+            config.alarms = config.alarms.filter(x => x.id !== id);
+            saveConfig(); renderAlarms();
+        }
+        function renderAlarms() {
+            const list = document.getElementById('alarms-list');
+            list.innerHTML = '<h3>Active Alarms</h3>';
+            const dayNames = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+            config.alarms.forEach(a => {
+                let dStr = a.days.length === 0 ? 'Once' : a.days.length === 7 ? 'Everyday' : a.days.map(d => dayNames[d]).join(', ');
+                list.innerHTML += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding:15px 0; opacity:${a.active?1:0.5};">
+                        <div style="text-align:left;">
+                            <div style="font-size:1.8rem; color:var(--gold); font-weight:bold;">${a.time}</div>
+                            <div style="font-size:0.7rem; color:#888;">${a.label} | ${dStr}</div>
+                        </div>
+                        <div>
+                            <button class="btn" style="padding:8px;" onclick="toggleAlarm(${a.id})">${a.active?'ON':'OFF'}</button>
+                            <button class="btn" style="padding:8px; color:var(--ruby);" onclick="delAlarm(${a.id})">X</button>
+                        </div>
+                    </div>
+                `;
             });
         }
+        
+        let lastChkMin = -1;
+        function checkAlarmsLogic(now) {
+            let curMin = now.getMinutes();
+            if(curMin === lastCheckedMin) return;
+            lastCheckedMin = curMin;
 
-        setInterval(updateClock, 1000);
-        updateClockUI();
+            let curTimeStr = now.getHours().toString().padStart(2,'0') + ":" + curMin.toString().padStart(2,'0');
+            let curDay = now.getDay();
 
-        document.getElementById('timerBtn').addEventListener('click', () => setMode('timer'));
-        document.getElementById('swBtn').addEventListener('click', () => setMode('stopwatch'));
+            config.alarms.forEach(a => {
+                if(a.active && a.time === curTimeStr) {
+                    if(a.days.length === 0 || a.days.includes(curDay)) {
+                        triggerAlarmUI(a.label);
+                        if(a.days.length === 0) { a.active = false; saveConfig(); renderAlarms(); } // One-time off
+                    }
+                }
+            });
 
-        // --- 5. FULLSCREEN & WAKE LOCK ---
-        document.getElementById('fsBtn').addEventListener('click', () => {
-            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-            else document.exitFullscreen();
-        });
-
-        let wakeLock = null, isWakeRequested = false;
-        const wakeBtn = document.getElementById('wakeBtn');
-
-        async function applyWakeLock() {
-            if ('wakeLock' in navigator && isWakeRequested) {
-                try { 
-                    wakeLock = await navigator.wakeLock.request('screen'); 
-                    wakeBtn.innerText = "Stay Awake: ON"; wakeBtn.classList.add('active-status');
-                } catch (err) { wakeBtn.innerText = "Awake Error"; }
-            }
+            // Check snoozes
+            snoozedAlarms = snoozedAlarms.filter(sa => {
+                if(sa.time === curTimeStr) { triggerAlarmUI(sa.label); return false; }
+                return true;
+            });
+        }
+        
+        let curRingLabel = "";
+        function triggerAlarmUI(label) {
+            playAlarmSound();
+            sendNotif("Alarm Ringing", label);
+            document.getElementById('alarm-modal-label').innerText = label;
+            document.getElementById('alarm-modal').style.display = 'block';
+            curRingLabel = label;
+        }
+        function stopAlarmModal() {
+            stopAlarmSound();
+            document.getElementById('alarm-modal').style.display = 'none';
+        }
+        function snoozeAlarm() {
+            stopAlarmSound();
+            document.getElementById('alarm-modal').style.display = 'none';
+            let d = new Date(); d.setMinutes(d.getMinutes() + 5);
+            snoozedAlarms.push({ time: d.getHours().toString().padStart(2,'0')+":"+d.getMinutes().toString().padStart(2,'0'), label: curRingLabel + " (Snoozed)" });
+            alert("Snoozed for 5 minutes.");
         }
 
-        wakeBtn.addEventListener('click', () => {
-            isWakeRequested = !isWakeRequested;
-            if (isWakeRequested) applyWakeLock();
-            else { wakeLock?.release(); wakeLock = null; wakeBtn.innerText = "Stay Awake: OFF"; wakeBtn.classList.remove('active-status'); }
+        /* =========================================
+           8. DATE CALCULATOR
+           ========================================= */
+        function calculateDateDiff() {
+            let d1 = new Date(document.getElementById('date1').value);
+            let d2 = new Date(document.getElementById('date2').value);
+            if(isNaN(d1) || isNaN(d2)) return alert("Select valid dates.");
+            let diffDays = Math.abs(d2 - d1) / (1000 * 60 * 60 * 24);
+            document.getElementById('date-diff-res').innerText = `${diffDays} Days Difference`;
+        }
+        function popDateMetrics() {
+            let n = new Date(); let s = new Date(n.getFullYear(), 0, 0);
+            let doy = Math.floor((n - s) / 86400000);
+            document.getElementById('today-metrics').innerHTML = `
+                Day of Year: <strong style="color:var(--accent)">${doy} / 365</strong><br>
+                Week Number: <strong style="color:var(--accent)">Week ${Math.ceil(doy/7)}</strong><br>
+                Leap Year: <strong style="color:var(--accent)">${n.getFullYear()%4===0?'Yes':'No'}</strong>
+            `;
+        }
+        popDateMetrics();
+
+        /* =========================================
+           9. SOLAR API
+           ========================================= */
+        async function fetchSolarData() {
+            let selId = document.getElementById('solar-search').value;
+            let loc = tzDB.find(t => t.id === selId);
+            if(!loc) return;
+            document.getElementById('solar-results').style.display = 'block';
+            document.getElementById('sun-rise').innerText = "Loading...";
+            try {
+                let res = await fetch(`https://api.sunrise-sunset.org/json?lat=${loc.lat}&lng=${loc.lng}&formatted=0`);
+                let data = await res.json();
+                if(data.status === "OK") {
+                    document.getElementById('sun-rise').innerText = new Date(data.results.sunrise).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    document.getElementById('sun-set').innerText = new Date(data.results.sunset).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    document.getElementById('sun-length').innerText = (data.results.day_length / 3600).toFixed(2) + " Hrs";
+                }
+            } catch(e) { document.getElementById('sun-rise').innerText = "API Error"; }
+        }
+
+        /* =========================================
+           10. THE GLOBAL ENGINE TICK
+           ========================================= */
+        function globalTick() {
+            const now = new Date();
+            
+            // 1. Update Main Clock & Dials
+            let opts = { hour: '2-digit', minute: '2-digit', hour12: !config.format24 };
+            let timeStr = now.toLocaleTimeString('en-US', opts).split(' ');
+            document.getElementById('time').innerHTML = `${timeStr[0]}<span class="sec-text" style="display:${config.showSec?'inline':'none'}">:${now.getSeconds().toString().padStart(2,'0')}</span> <span style="font-size:1.5vw;color:#777">${!config.format24 ? timeStr[1] : ''}</span>`;
+            document.getElementById('date').innerText = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+            document.getElementById('utc-display').innerText = `UTC: ${now.toISOString().substring(11, 16)}Z`;
+
+            if(config.analog) {
+                document.getElementById('hr-hand').style.transform = `translateX(-50%) rotate(${(now.getHours()%12 * 30) + (now.getMinutes()*0.5)}deg)`;
+                document.getElementById('min-hand').style.transform = `translateX(-50%) rotate(${now.getMinutes() * 6}deg)`;
+                document.getElementById('sec-hand').style.transform = `translateX(-50%) rotate(${now.getSeconds() * 6}deg)`;
+            }
+
+            config.dials.forEach((zone, i) => {
+                let el = document.getElementById(`dt-${i}`);
+                let dstEl = document.getElementById(`dst-${i}`);
+                if(el && dstEl) {
+                    try { 
+                        el.innerText = now.toLocaleTimeString('en-GB', { hour12: !config.format24, hour: '2-digit', minute: '2-digit', timeZone: zone }); 
+                        // DST Check logic (Is offset different from January offset?)
+                        let jan = new Date(now.getFullYear(), 0, 1).toLocaleString("en-US", {timeZone: zone, timeZoneName: "shortOffset"});
+                        let cur = now.toLocaleString("en-US", {timeZone: zone, timeZoneName: "shortOffset"});
+                        dstEl.innerText = (jan !== cur) ? "(DST)" : "";
+                    } catch(e) {}
+                }
+            });
+
+            // 2. Stopwatch Logic
+            if(swRun) {
+                swTime = Date.now() - swStart;
+                document.getElementById('sw-display').innerText = formatSw(swTime);
+            }
+
+            // 3. Alarms
+            checkAlarmsLogic(now);
+
+            requestAnimationFrame(globalTick);
+        }
+        requestAnimationFrame(globalTick); // Start the engine
+
+        /* =========================================
+           11. WAKELOCK
+           ========================================= */
+        let wakeLock = null, wakeReq = false;
+        async function toggleWakeLock() {
+            const btn = document.getElementById('wake-btn');
+            if (!('wakeLock' in navigator)) return btn.innerText = "WakeLock Not Supported";
+            wakeReq = !wakeReq;
+            if(wakeReq) {
+                try { wakeLock = await navigator.wakeLock.request('screen'); btn.innerText = "WakeLock: ON"; btn.classList.add('active-status'); } 
+                catch(e) { btn.innerText = "WakeLock: Error"; wakeReq = false; }
+            } else {
+                wakeLock?.release(); wakeLock = null; btn.innerText = "WakeLock: OFF"; btn.classList.remove('active-status');
+            }
+        }
+        document.addEventListener('visibilitychange', async () => {
+            if (wakeReq && document.visibilityState === 'visible' && 'wakeLock' in navigator) {
+                wakeLock = await navigator.wakeLock.request('screen');
+            }
         });
-        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && isWakeRequested) applyWakeLock(); });
 
     </script>
 </body>

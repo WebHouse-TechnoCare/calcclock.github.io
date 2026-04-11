@@ -28,32 +28,13 @@
             transition: color 1s ease, background 0.5s;
         }
 
-        #ambientCanvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 0;
-        }
+        #ambientCanvas { position: absolute; top: 0; left: 0; z-index: 0; }
 
-        .home-btn {
-            position: absolute;
-            top: 30px;
-            left: 30px;
-            z-index: 100;
-            transition: transform 0.3s ease;
-        }
+        .home-btn { position: absolute; top: 30px; left: 30px; z-index: 100; transition: transform 0.3s ease; }
+        .home-btn img { height: 50px; width: auto; opacity: 0.6; transition: 0.3s; }
+        .home-btn:hover img { opacity: 1; transform: scale(1.05); }
 
-        .home-btn img {
-            height: 50px;
-            width: auto;
-            opacity: 0.6;
-        }
-
-        .watch-face {
-            position: relative;
-            text-align: center;
-            z-index: 2;
-        }
+        .watch-face { position: relative; text-align: center; z-index: 2; }
 
         #time {
             font-size: 8rem;
@@ -62,7 +43,7 @@
             margin: 0;
             line-height: 1;
             text-shadow: 0 0 20px rgba(0,0,0,0.5);
-            font-variant-numeric: tabular-nums; /* Keeps numbers from shifting */
+            font-variant-numeric: tabular-nums;
         }
 
         #date {
@@ -71,97 +52,52 @@
             text-transform: uppercase;
             color: #555;
             margin-top: 15px;
+            transition: color 0.3s;
         }
 
         /* World Clock Styles */
-        .sub-dials {
-            display: flex;
-            gap: 30px;
-            margin-top: 30px;
-            justify-content: center;
-            transition: opacity 0.5s ease;
-        }
-
+        .sub-dials { display: flex; gap: 30px; margin-top: 30px; justify-content: center; transition: opacity 0.5s ease; }
+        
         .dial {
             position: relative;
             text-align: center;
-            min-width: 90px;
+            min-width: 100px;
             cursor: pointer;
             padding: 10px;
             border-radius: 10px;
-            transition: background 0.3s;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s;
         }
-
-        .dial:hover { background: rgba(255,255,255,0.05); }
+        .dial:hover { background: rgba(255,255,255,0.08); border-color: var(--accent); }
 
         .tz-select {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            opacity: 0; /* Invisible but clickable */
-            cursor: pointer;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0; cursor: pointer; z-index: 10;
         }
 
-        .dial-time {
-            font-size: 1.4rem;
-            font-weight: 300;
-            letter-spacing: 1px;
-            color: var(--accent);
-            opacity: 0.8;
-        }
+        .dial-time { font-size: 1.5rem; font-weight: 300; letter-spacing: 1px; color: var(--accent); opacity: 0.9; }
+        .dial-label { font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; color: #777; margin-top: 5px; display: flex; align-items: center; justify-content: center; gap: 4px; }
 
-        .dial-label {
-            font-size: 0.6rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: #555;
-            margin-top: 5px;
-        }
-
-        /* Dynamic Tool Controls (Pomo/Stopwatch) */
-        .tool-controls {
-            display: none; /* Hidden by default */
-            gap: 15px;
-            margin-top: 30px;
-            justify-content: center;
-        }
-
-        .controls {
-            position: absolute;
-            bottom: 40px;
-            display: flex;
-            gap: 15px;
-            z-index: 10;
-        }
+        /* Dynamic Tool Controls */
+        .tool-controls { display: none; gap: 15px; margin-top: 30px; justify-content: center; }
+        .controls { position: absolute; bottom: 40px; display: flex; gap: 15px; z-index: 10; }
 
         .btn-util {
-            background: rgba(0,0,0,0.6);
-            border: 1px solid #333;
-            color: #666;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.65rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            transition: all 0.3s;
-            backdrop-filter: blur(5px);
+            background: rgba(0,0,0,0.6); border: 1px solid #333; color: #888; padding: 10px 20px;
+            border-radius: 4px; cursor: pointer; font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase;
+            transition: all 0.3s; backdrop-filter: blur(5px);
         }
-
-        .btn-util:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-
-        .active-status {
-            color: var(--accent) !important;
-            border-color: var(--accent) !important;
-            box-shadow: 0 0 10px rgba(212, 175, 55, 0.1);
-        }
+        .btn-util:hover { border-color: var(--accent); color: var(--accent); }
+        .active-status { color: var(--accent) !important; border-color: var(--accent) !important; box-shadow: 0 0 15px rgba(212, 175, 55, 0.15); }
 
         @media (max-width: 700px) {
             #time { font-size: 4.5rem; }
             .sub-dials { gap: 10px; flex-wrap: wrap; }
+            .dial { min-width: 120px; }
             .controls { flex-wrap: wrap; justify-content: center; padding: 0 20px; bottom: 20px; }
+            .home-btn { top: 15px; left: 15px; }
+            .home-btn img { height: 35px; }
         }
     </style>
 </head>
@@ -175,13 +111,12 @@
         <h1 id="time">00:00:00</h1>
         <div id="date">CALCCLOCK CHRONOMETER</div>
 
-        <div class="sub-dials" id="subDials">
-            </div>
+        <div class="sub-dials" id="subDials"></div>
 
         <div class="tool-controls" id="toolControls">
             <button class="btn-util" id="btn-action">START</button>
             <button class="btn-util" id="btn-reset">RESET</button>
-            <button class="btn-util" id="btn-exit" style="border-color: #555;">EXIT MODE</button>
+            <button class="btn-util" id="btn-exit" style="border-color: #555; color: #ccc;">EXIT MODE</button>
         </div>
     </div>
 
@@ -206,7 +141,7 @@
         function drawAmbient() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent');
-            ctx.globalAlpha = 0.2;
+            ctx.globalAlpha = 0.15;
             particles.forEach(p => {
                 ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
                 p.x += p.speedX + (mouse.x - canvas.width/2)*0.001; p.y += p.speedY + (mouse.y - canvas.height/2)*0.001;
@@ -219,25 +154,85 @@
         window.addEventListener('resize', initCanvas);
         initCanvas(); drawAmbient();
 
-        // --- 2. World Clock Data & Injection ---
+        // --- 2. MASSIVE GLOBAL TIMEZONE DATABASE ---
         const tzList = [
-            { id: 'America/New_York', name: 'USA (EST)' },
+            { id: 'Pacific/Midway', name: 'Midway (Samoa)' },
+            { id: 'Pacific/Honolulu', name: 'USA (Hawaii)' },
+            { id: 'America/Anchorage', name: 'USA (Alaska)' },
             { id: 'America/Los_Angeles', name: 'USA (PST)' },
-            { id: 'Europe/London', name: 'UK (LDN)' },
-            { id: 'Europe/Paris', name: 'Paris' },
-            { id: 'Asia/Kolkata', name: 'India' },
-            { id: 'Asia/Tokyo', name: 'Tokyo' },
-            { id: 'Asia/Dubai', name: 'Dubai' },
-            { id: 'Australia/Sydney', name: 'Sydney' }
+            { id: 'America/Denver', name: 'USA (MST)' },
+            { id: 'America/Chicago', name: 'USA (CST)' },
+            { id: 'America/New_York', name: 'USA (EST)' },
+            { id: 'America/Toronto', name: 'Canada (EST)' },
+            { id: 'America/Vancouver', name: 'Canada (PST)' },
+            { id: 'America/Mexico_City', name: 'Mexico' },
+            { id: 'America/Bogota', name: 'Colombia' },
+            { id: 'America/Lima', name: 'Peru' },
+            { id: 'America/Caracas', name: 'Venezuela' },
+            { id: 'America/Santiago', name: 'Chile' },
+            { id: 'America/Buenos_Aires', name: 'Argentina' },
+            { id: 'America/Sao_Paulo', name: 'Brazil' },
+            { id: 'Atlantic/Reykjavik', name: 'Iceland' },
+            { id: 'Europe/London', name: 'UK (London)' },
+            { id: 'Europe/Dublin', name: 'Ireland' },
+            { id: 'Europe/Lisbon', name: 'Portugal' },
+            { id: 'Europe/Paris', name: 'France' },
+            { id: 'Europe/Berlin', name: 'Germany' },
+            { id: 'Europe/Rome', name: 'Italy' },
+            { id: 'Europe/Madrid', name: 'Spain' },
+            { id: 'Europe/Amsterdam', name: 'Netherlands' },
+            { id: 'Europe/Brussels', name: 'Belgium' },
+            { id: 'Europe/Zurich', name: 'Switzerland' },
+            { id: 'Europe/Stockholm', name: 'Sweden' },
+            { id: 'Europe/Oslo', name: 'Norway' },
+            { id: 'Europe/Copenhagen', name: 'Denmark' },
+            { id: 'Europe/Warsaw', name: 'Poland' },
+            { id: 'Europe/Prague', name: 'Czechia' },
+            { id: 'Europe/Vienna', name: 'Austria' },
+            { id: 'Europe/Budapest', name: 'Hungary' },
+            { id: 'Europe/Athens', name: 'Greece' },
+            { id: 'Europe/Bucharest', name: 'Romania' },
+            { id: 'Europe/Kyiv', name: 'Ukraine' },
+            { id: 'Europe/Moscow', name: 'Russia (MSK)' },
+            { id: 'Europe/Istanbul', name: 'Turkey' },
+            { id: 'Africa/Cairo', name: 'Egypt' },
+            { id: 'Africa/Johannesburg', name: 'South Africa' },
+            { id: 'Africa/Lagos', name: 'Nigeria' },
+            { id: 'Africa/Nairobi', name: 'Kenya' },
+            { id: 'Africa/Casablanca', name: 'Morocco' },
+            { id: 'Asia/Jerusalem', name: 'Israel' },
+            { id: 'Asia/Riyadh', name: 'Saudi Arabia' },
+            { id: 'Asia/Dubai', name: 'UAE (Dubai)' },
+            { id: 'Asia/Qatar', name: 'Qatar' },
+            { id: 'Asia/Tehran', name: 'Iran' },
+            { id: 'Asia/Karachi', name: 'Pakistan' },
+            { id: 'Asia/Kolkata', name: 'India (IST)' },
+            { id: 'Asia/Colombo', name: 'Sri Lanka' },
+            { id: 'Asia/Dhaka', name: 'Bangladesh' },
+            { id: 'Asia/Bangkok', name: 'Thailand' },
+            { id: 'Asia/Jakarta', name: 'Indonesia' },
+            { id: 'Asia/Kuala_Lumpur', name: 'Malaysia' },
+            { id: 'Asia/Singapore', name: 'Singapore' },
+            { id: 'Asia/Ho_Chi_Minh', name: 'Vietnam' },
+            { id: 'Asia/Shanghai', name: 'China (Beijing)' },
+            { id: 'Asia/Hong_Kong', name: 'Hong Kong' },
+            { id: 'Asia/Taipei', name: 'Taiwan' },
+            { id: 'Asia/Seoul', name: 'South Korea' },
+            { id: 'Asia/Tokyo', name: 'Japan (Tokyo)' },
+            { id: 'Australia/Perth', name: 'Australia (AWST)' },
+            { id: 'Australia/Adelaide', name: 'Australia (ACST)' },
+            { id: 'Australia/Sydney', name: 'Australia (AEST)' },
+            { id: 'Pacific/Auckland', name: 'New Zealand' },
+            { id: 'Pacific/Fiji', name: 'Fiji' }
         ];
+
+        tzList.sort((a, b) => a.name.localeCompare(b.name));
         
-        // Default 4 Dials
         let activeZones = ['America/New_York', 'Europe/London', 'Asia/Kolkata', 'Asia/Tokyo'];
         const subDialsContainer = document.getElementById('subDials');
 
         function buildDials() {
             subDialsContainer.innerHTML = '';
-            // Create options HTML once
             let optionsHTML = tzList.map(tz => `<option value="${tz.id}">${tz.name}</option>`).join('');
 
             activeZones.forEach((zoneId, index) => {
@@ -249,15 +244,12 @@
                         ${optionsHTML}
                     </select>
                     <div class="dial-time" id="dial-time-${index}">00:00</div>
-                    <div class="dial-label" id="dial-label-${index}">${tzData.name}</div>
+                    <div class="dial-label" id="dial-label-${index}">${tzData.name} ▾</div>
                 `;
-                // Set the correct option as selected
                 dial.querySelector('select').value = zoneId;
-                
-                // Event Listener for changing timezone
                 dial.querySelector('select').addEventListener('change', (e) => {
                     activeZones[index] = e.target.value;
-                    document.getElementById(`dial-label-${index}`).innerText = tzList.find(t => t.id === e.target.value).name;
+                    document.getElementById(`dial-label-${index}`).innerHTML = `${tzList.find(t => t.id === e.target.value).name} ▾`;
                     updateClock();
                 });
                 subDialsContainer.appendChild(dial);
@@ -274,18 +266,9 @@
         const btnReset = document.getElementById('btn-reset');
         const btnExit = document.getElementById('btn-exit');
 
-        let currentMode = 'clock'; // 'clock', 'pomo', 'stopwatch'
-        
-        // Pomodoro State
-        let pomoTime = 25 * 60;
-        let pomoRunning = false;
-        let pomoInterval;
-
-        // Stopwatch State
-        let swTime = 0;
-        let swRunning = false;
-        let swInterval;
-        let swStartTime = 0;
+        let currentMode = 'clock'; 
+        let pomoTime = 25 * 60, pomoRunning = false, pomoInterval;
+        let swTime = 0, swRunning = false, swInterval, swStartTime = 0;
 
         function setMode(mode) {
             currentMode = mode;
@@ -294,6 +277,7 @@
                 toolControls.style.display = 'none';
                 mainControls.style.display = 'flex';
                 document.documentElement.style.setProperty('--accent', 'var(--gold)');
+                dateEl.style.color = '#555';
                 updateClock();
             } else {
                 subDialsContainer.style.display = 'none';
@@ -303,18 +287,19 @@
                 if(mode === 'pomo') {
                     document.documentElement.style.setProperty('--accent', 'var(--ruby)');
                     dateEl.innerText = "FOCUS SESSION";
+                    dateEl.style.color = 'var(--ruby)';
                     btnAction.innerText = pomoRunning ? "PAUSE" : "START";
                     updatePomoDisplay();
                 } else if (mode === 'stopwatch') {
                     document.documentElement.style.setProperty('--accent', 'var(--sapphire)');
                     dateEl.innerText = "PRECISION STOPWATCH";
+                    dateEl.style.color = 'var(--sapphire)';
                     btnAction.innerText = swRunning ? "PAUSE" : "START";
                     updateSwDisplay();
                 }
             }
         }
 
-        // Action Button Logic (Start/Pause)
         btnAction.addEventListener('click', () => {
             if(currentMode === 'pomo') {
                 pomoRunning = !pomoRunning;
@@ -327,11 +312,11 @@
                             pomoRunning = false;
                             pomoTime = 25 * 60;
                             btnAction.innerText = "START";
-                            alert("Session complete!");
+                            alert("Session complete! Time for a break.");
                         }
                         updatePomoDisplay();
                     }, 1000);
-                } else { clearInterval(pomoInterval); }
+                } else clearInterval(pomoInterval);
             } 
             else if (currentMode === 'stopwatch') {
                 swRunning = !swRunning;
@@ -341,12 +326,11 @@
                     swInterval = setInterval(() => {
                         swTime = Date.now() - swStartTime;
                         updateSwDisplay();
-                    }, 10); // 10ms for smooth centiseconds
-                } else { clearInterval(swInterval); }
+                    }, 10);
+                } else clearInterval(swInterval);
             }
         });
 
-        // Reset Button Logic
         btnReset.addEventListener('click', () => {
             if(currentMode === 'pomo') {
                 clearInterval(pomoInterval);
@@ -363,10 +347,8 @@
             }
         });
 
-        // Exit Mode Logic
         btnExit.addEventListener('click', () => setMode('clock'));
 
-        // Display Updaters
         function updatePomoDisplay() {
             let m = Math.floor(pomoTime / 60).toString().padStart(2, '0');
             let s = (pomoTime % 60).toString().padStart(2, '0');
@@ -377,7 +359,7 @@
             let totalSecs = Math.floor(swTime / 1000);
             let m = Math.floor(totalSecs / 60).toString().padStart(2, '0');
             let s = (totalSecs % 60).toString().padStart(2, '0');
-            let ms = Math.floor((swTime % 1000) / 10).toString().padStart(2, '0'); // Centiseconds
+            let ms = Math.floor((swTime % 1000) / 10).toString().padStart(2, '0');
             timeEl.innerText = `${m}:${s}.${ms}`;
         }
 
@@ -387,7 +369,6 @@
             timeEl.innerText = now.toLocaleTimeString('en-GB', { hour12: false });
             dateEl.innerText = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
 
-            // Update Dials
             activeZones.forEach((zone, i) => {
                 let el = document.getElementById(`dial-time-${i}`);
                 if(el) el.innerText = now.toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit', timeZone: zone });
@@ -395,9 +376,8 @@
         }
 
         setInterval(updateClock, 1000);
-        updateClock(); // Initial run
+        updateClock();
 
-        // Trigger Modes from Main Menu
         document.getElementById('pomoBtn').addEventListener('click', () => setMode('pomo'));
         document.getElementById('swBtn').addEventListener('click', () => setMode('stopwatch'));
 
@@ -432,7 +412,6 @@
             }
         });
 
-        // The Fix: Re-acquire wake lock if user switches tabs and comes back
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible' && isWakeRequested) applyWakeLock();
         });

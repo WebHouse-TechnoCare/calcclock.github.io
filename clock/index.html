@@ -18,27 +18,27 @@
         }
 
         body { background: var(--bg); color: var(--text); font-family: 'Helvetica Neue', sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; overflow: hidden; transition: background 0.4s, color 0.4s; }
-        #ambientCanvas { position: absolute; top: 0; left: 0; z-index: 0; pointer-events: none; }
         
         /* SIDEBAR NAVIGATION */
         .menu-btn { position: absolute; top: 20px; left: 20px; z-index: 1000; background: var(--panel); border: 1px solid var(--border); color: var(--text); font-size: 1.5rem; padding: 10px 15px; border-radius: 8px; cursor: pointer; transition: 0.3s; }
         .menu-btn:hover { border-color: var(--accent); color: var(--accent); }
-        .sidebar { position: fixed; top: 0; left: -300px; width: 260px; height: 100%; background: rgba(10,10,10,0.95); backdrop-filter: blur(15px); border-right: 1px solid var(--border); z-index: 999; transition: 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); display: flex; flex-direction: column; padding-top: 80px; box-shadow: 10px 0 30px rgba(0,0,0,0.5); overflow-y: auto; }
+        
+        .sidebar { position: fixed; top: 0; left: -300px; width: 260px; height: 100%; background: rgba(10,10,10,0.95); backdrop-filter: blur(15px); border-right: 1px solid var(--border); z-index: 999; transition: 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); display: flex; flex-direction: column; padding-top: 80px; box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
         [data-theme="light"] .sidebar { background: rgba(255,255,255,0.95); }
         .sidebar.open { left: 0; }
-        .nav-item { padding: 15px 25px; color: var(--text); text-decoration: none; font-size: 0.9rem; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; border-bottom: 1px solid var(--border); transition: 0.2s; display: flex; justify-content: space-between; }
+        .nav-item { padding: 15px 25px; color: var(--text); text-decoration: none; font-size: 0.9rem; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; border-bottom: 1px solid var(--border); transition: 0.2s; }
         .nav-item:hover, .nav-item.active { background: var(--accent); color: #000; font-weight: bold; }
 
         /* MAIN CONTENT AREA */
-        .main-content { flex: 1; position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; width: 100%; padding: 20px; box-sizing: border-box; overflow-y: auto; }
-        .view-section { display: none; width: 100%; max-width: 900px; text-align: center; animation: fadeIn 0.4s ease; padding-bottom: 50px; }
+        .main-content { flex: 1; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; padding: 20px; box-sizing: border-box; }
+        .view-section { display: none; width: 100%; max-width: 800px; text-align: center; animation: fadeIn 0.4s ease; }
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* VIEW: CLOCK */
-        #time { font-size: clamp(4rem, 8vw, 8rem); font-weight: 100; letter-spacing: -2px; margin: 0; font-variant-numeric: tabular-nums; text-shadow: 0 0 20px rgba(0,0,0,0.2); }
-        .sec-text { font-size: clamp(1.5rem, 3vw, 3rem); color: #888; }
-        #date { font-size: clamp(0.8rem, 1.2vw, 1.2rem); letter-spacing: 4px; text-transform: uppercase; color: #888; margin-top: 10px; }
+        #time { font-size: 7vw; font-weight: 100; letter-spacing: -2px; margin: 0; font-variant-numeric: tabular-nums; text-shadow: 0 0 20px rgba(0,0,0,0.2); }
+        .sec-text { font-size: 3vw; color: #888; }
+        #date { font-size: 1rem; letter-spacing: 4px; text-transform: uppercase; color: #888; margin-top: 10px; }
         
         .analog-container { display: none; width: 250px; height: 250px; border: 2px solid var(--border); border-radius: 50%; margin: 0 auto 20px; position: relative; background: var(--panel); box-shadow: inset 0 0 20px rgba(0,0,0,0.1); }
         .hand { position: absolute; bottom: 50%; left: 50%; transform-origin: bottom; border-radius: 10px; }
@@ -48,58 +48,45 @@
         .center-dot { position: absolute; top: 50%; left: 50%; width: 12px; height: 12px; background: var(--accent); border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; }
 
         .dials-grid { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-top: 30px; }
-        .dial { background: var(--panel); border: 1px solid var(--border); padding: 15px; border-radius: 12px; min-width: 140px; position: relative; transition: 0.3s; }
-        .dial:hover { border-color: var(--accent); }
+        .dial { background: var(--panel); border: 1px solid var(--border); padding: 15px; border-radius: 12px; min-width: 120px; position: relative; }
         .dial-time { font-size: 1.5rem; color: var(--accent); }
-        .dial-label { font-size: 0.7rem; text-transform: uppercase; color: #888; margin-top: 5px; }
-        .dial-dst { font-size: 0.6rem; color: var(--sapphire); font-weight: bold; }
-        .remove-dial { position: absolute; top: -8px; right: -8px; background: var(--ruby); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 12px; cursor: pointer; display: none; }
+        .dial-label { font-size: 0.6rem; text-transform: uppercase; color: #888; margin-top: 5px; cursor: pointer; }
+        .remove-dial { position: absolute; top: -5px; right: -5px; background: var(--ruby); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 10px; cursor: pointer; display: none; }
         .dial:hover .remove-dial { display: block; }
-        .tz-search { background: transparent; border: none; color: var(--text); font-size: 0.7rem; width: 100%; text-align: center; border-bottom: 1px solid var(--border); margin-bottom: 5px; outline: none; }
+        .tz-select { position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer; }
 
-        /* UTILITY */
-        .btn { background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 10px 20px; border-radius: 6px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; font-size: 0.7rem; transition: 0.2s; margin: 5px; }
+        /* UTILITY BUTTONS & INPUTS */
+        .btn { background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 12px 20px; border-radius: 6px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; font-size: 0.7rem; transition: 0.2s; margin: 5px; }
         .btn:hover { border-color: var(--accent); color: var(--accent); }
         .btn-primary { background: var(--accent); color: #000; font-weight: bold; border: none; }
-        .input-box { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 10px; border-radius: 6px; font-size: 1rem; width: 100%; max-width: 250px; text-align: center; box-sizing: border-box; }
+        .input-box { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 10px; border-radius: 6px; font-size: 1rem; width: 100%; max-width: 200px; text-align: center; }
         
-        .card { background: var(--panel); border: 1px solid var(--border); padding: 20px; border-radius: 12px; margin: 15px auto; max-width: 500px; text-align: left; position: relative; }
+        /* DATA TABLES & CARDS */
+        .card { background: var(--panel); border: 1px solid var(--border); padding: 20px; border-radius: 12px; margin: 15px auto; max-width: 500px; text-align: left; }
         .card h3 { margin-top: 0; color: var(--accent); font-size: 0.9rem; letter-spacing: 2px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
 
-        /* MULTI-TIMERS */
-        .timer-card { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--border); }
-        .timer-display { font-size: 2rem; font-variant-numeric: tabular-nums; color: var(--ruby); font-weight: bold; }
-        
-        /* ALARMS */
-        .days-selector label { font-size: 0.7rem; margin-right: 5px; color: #888; cursor: pointer; }
-        .days-selector input[type="checkbox"]:checked + span { color: var(--gold); font-weight: bold; }
-
-        /* CONVERTER */
+        /* VIEW: CONVERTER */
         .slider-container { margin: 30px 0; }
-        input[type=range] { width: 100%; max-width: 500px; accent-color: var(--accent); }
+        input[type=range] { width: 100%; max-width: 400px; accent-color: var(--accent); }
 
-        /* SCROLLBARS */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg); }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
-
-        @media (max-width: 600px) { .menu-btn { top: 10px; left: 10px; padding: 5px 10px; } .sidebar { width: 240px; } }
+        @media (max-width: 600px) {
+            #time { font-size: 15vw; }
+            .menu-btn { top: 10px; left: 10px; padding: 5px 10px; }
+            .sidebar { width: 220px; }
+        }
     </style>
 </head>
 <body>
-
-    <audio id="snd-beep" preload="auto"><source src="data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU" type="audio/wav"></audio>
 
     <button class="menu-btn" onclick="toggleMenu()">☰</button>
     <div class="sidebar" id="sidebar">
         <a class="nav-item active" onclick="switchView('view-clock')">🕰️ Main Clock</a>
         <a class="nav-item" onclick="switchView('view-converter')">🌍 TZ Converter</a>
-        <a class="nav-item" onclick="switchView('view-timer')">⏳ Multi-Timers</a>
+        <a class="nav-item" onclick="switchView('view-timer')">⏳ Timers</a>
         <a class="nav-item" onclick="switchView('view-stopwatch')">⏱️ Stopwatch</a>
         <a class="nav-item" onclick="switchView('view-alarm')">⏰ Alarms</a>
         <a class="nav-item" onclick="switchView('view-date')">📅 Date Calc</a>
-        <a class="nav-item" onclick="switchView('view-realworld')">🌅 Global Data</a>
+        <a class="nav-item" onclick="switchView('view-realworld')">🌅 Real-World Info</a>
         <a class="nav-item" onclick="switchView('view-settings')">⚙️ Settings</a>
         <div style="flex:1"></div>
         <a class="nav-item" onclick="toggleFullscreen()">🔲 Fullscreen</a>
@@ -116,108 +103,95 @@
             </div>
             <h1 id="time">00:00<span class="sec-text" id="sec-text">:00</span></h1>
             <div id="date">Loading...</div>
-            <div id="utc-display" style="font-size:0.7rem; color:#666; margin-top:5px; font-family:monospace;">UTC: --:--</div>
+            <div id="epoch-display" style="font-size:0.6rem; color:#666; margin-top:5px;">Unix: 0000000000</div>
             
             <div class="dials-grid" id="dials-container"></div>
-            <button class="btn" onclick="addDial()" style="margin-top:20px;">+ Add World Clock</button>
-            <datalist id="tz-datalist"></datalist>
+            <button class="btn" onclick="addDial()" style="margin-top:20px;">+ Add City</button>
         </div>
 
         <div id="view-converter" class="view-section">
             <h2 style="color:var(--accent); text-transform:uppercase; letter-spacing:3px;">Timezone Converter</h2>
+            <p>Slide to compare times globally</p>
             <div class="slider-container">
-                <input type="range" id="tz-slider" min="0" max="24" value="12" step="0.5" oninput="updateConverter()">
+                <input type="range" id="tz-slider" min="0" max="24" value="12" step="1" oninput="updateConverter()">
                 <div id="slider-val" style="margin-top:10px; font-size:1.5rem; font-weight:bold;">12:00 PM (Local)</div>
             </div>
             <div class="dials-grid" id="converter-results"></div>
         </div>
 
         <div id="view-timer" class="view-section">
-            <h2 style="color:var(--ruby); text-transform:uppercase; letter-spacing:3px;">Concurrent Timers</h2>
+            <h2 style="color:var(--ruby); text-transform:uppercase; letter-spacing:3px;">Precision Timer</h2>
             <div class="card" style="text-align:center;">
-                <input type="number" id="new-timer-min" class="input-box" placeholder="Minutes" style="width:100px;">
+                <input type="number" id="new-timer-min" class="input-box" placeholder="Minutes" value="5" min="1" max="999">
                 <button class="btn btn-primary" onclick="addTimer()">+ Add Timer</button>
-                <div style="margin-top:10px;">
-                    <button class="btn" onclick="addTimer(5)">5m</button>
-                    <button class="btn" onclick="addTimer(15)">15m</button>
-                    <button class="btn" onclick="addTimer(25)">25m (Pomo)</button>
-                </div>
             </div>
             <div class="card" id="timers-list" style="background:transparent; border:none; padding:0;"></div>
         </div>
 
         <div id="view-stopwatch" class="view-section">
-            <h2 style="color:var(--sapphire); text-transform:uppercase; letter-spacing:3px;">Precision Stopwatch</h2>
+            <h2 style="color:var(--sapphire); text-transform:uppercase; letter-spacing:3px;">Stopwatch</h2>
             <h1 id="sw-display" style="font-size: 4rem; margin:20px 0; font-variant-numeric:tabular-nums;">00:00.00</h1>
             <div>
                 <button class="btn btn-primary" id="sw-action" onclick="toggleStopwatch()">START</button>
                 <button class="btn" onclick="lapStopwatch()">LAP</button>
                 <button class="btn" onclick="resetStopwatch()">RESET</button>
             </div>
-            <div class="card" id="laps-card" style="max-height: 300px; overflow-y:auto; display:none;">
-                <h3>Lap History</h3>
-                <div id="laps-list" style="font-family:monospace; font-size:1.1rem; color:#aaa;"></div>
+            <div class="card" id="laps-card" style="display:none; max-height: 200px; overflow-y:auto;">
+                <h3>Lap Times</h3>
+                <div id="laps-list"></div>
             </div>
         </div>
 
         <div id="view-alarm" class="view-section">
-            <h2 style="color:var(--gold); text-transform:uppercase; letter-spacing:3px;">Smart Alarms</h2>
+            <h2 style="color:var(--gold); text-transform:uppercase; letter-spacing:3px;">Alarm System</h2>
             <div class="card">
                 <input type="time" id="alarm-time" class="input-box">
                 <input type="text" id="alarm-label" class="input-box" placeholder="Label (e.g. Meeting)" style="margin-top:10px;">
-                <div class="days-selector" style="margin-top:15px; display:flex; justify-content:space-between;">
-                    <label><input type="checkbox" class="al-day" value="0"><span>Su</span></label>
-                    <label><input type="checkbox" class="al-day" value="1"><span>Mo</span></label>
-                    <label><input type="checkbox" class="al-day" value="2"><span>Tu</span></label>
-                    <label><input type="checkbox" class="al-day" value="3"><span>We</span></label>
-                    <label><input type="checkbox" class="al-day" value="4"><span>Th</span></label>
-                    <label><input type="checkbox" class="al-day" value="5"><span>Fr</span></label>
-                    <label><input type="checkbox" class="al-day" value="6"><span>Sa</span></label>
-                </div>
                 <button class="btn btn-primary" onclick="addAlarm()" style="margin-top:15px; width:100%;">+ Set Alarm</button>
             </div>
-            <div class="card" id="alarms-list"></div>
+            <div class="card" id="alarms-list">
+                <h3>Active Alarms</h3>
+            </div>
         </div>
 
         <div id="view-date" class="view-section">
             <h2 style="color:var(--accent); text-transform:uppercase; letter-spacing:3px;">Date Intelligence</h2>
             <div class="card">
                 <h3>Day Counter</h3>
-                <input type="date" id="date1" class="input-box" style="margin-bottom:10px;">
-                <input type="date" id="date2" class="input-box">
-                <button class="btn" onclick="calculateDateDiff()" style="margin-top:10px; width:100%;">Calculate Difference</button>
-                <div id="date-diff-res" style="margin-top:15px; font-size:1.2rem; font-weight:bold; color:var(--accent); text-align:center;"></div>
+                <input type="date" id="date1" class="input-box"> to <input type="date" id="date2" class="input-box">
+                <button class="btn" onclick="calculateDateDiff()" style="margin-top:10px;">Calculate</button>
+                <div id="date-diff-res" style="margin-top:10px; font-weight:bold; color:var(--accent);"></div>
             </div>
             <div class="card">
                 <h3>Today's Metrics</h3>
-                <div id="today-metrics" style="line-height:2; font-size:1.1rem;"></div>
+                <div id="today-metrics" style="line-height:1.8;"></div>
             </div>
         </div>
 
         <div id="view-realworld" class="view-section">
             <h2 style="color:var(--accent); text-transform:uppercase; letter-spacing:3px;">Global Solar Data</h2>
-            <div class="card">
-                <input type="text" id="solar-search" list="tz-datalist" class="input-box" placeholder="Search City..." onchange="fetchSolarData()">
-                <div id="solar-results" style="margin-top:20px; display:none; line-height:1.8;">
-                    <p>Sunrise: <strong id="sun-rise" style="color:var(--gold)">--</strong></p>
-                    <p>Sunset: <strong id="sun-set" style="color:#ff7e67">--</strong></p>
-                    <p>Day Length: <strong id="sun-length">--</strong></p>
-                </div>
+            <p style="font-size:0.8rem; color:#888;">Select a city to fetch live solar data</p>
+            <select id="solar-city-select" class="input-box" onchange="fetchSolarData()"></select>
+            <div class="card" id="solar-results" style="display:none;">
+                <h3>Solar Metrics</h3>
+                <p><strong>Sunrise:</strong> <span id="sun-rise">--</span></p>
+                <p><strong>Sunset:</strong> <span id="sun-set">--</span></p>
+                <p><strong>Day Length:</strong> <span id="sun-length">--</span></p>
             </div>
         </div>
 
         <div id="view-settings" class="view-section">
-            <h2 style="color:var(--accent); text-transform:uppercase; letter-spacing:3px;">Preferences</h2>
-            <div class="card">
-                <div style="margin-bottom:15px;"><label><input type="checkbox" id="set-light" onchange="saveConfig()"> Light Mode</label></div>
+            <h2 style="color:var(--accent); text-transform:uppercase; letter-spacing:3px;">System Preferences</h2>
+            <div class="card" style="max-width: 300px;">
+                <div style="margin-bottom:15px;"><label><input type="checkbox" id="set-light" onchange="saveConfig()"> Enable Light Mode</label></div>
                 <div style="margin-bottom:15px;"><label><input type="checkbox" id="set-24h" onchange="saveConfig()"> 24-Hour Format</label></div>
                 <div style="margin-bottom:15px;"><label><input type="checkbox" id="set-sec" onchange="saveConfig()"> Show Seconds</label></div>
-                <div style="margin-bottom:15px;"><label><input type="checkbox" id="set-analog" onchange="saveConfig()"> Analog Clock Face</label></div>
-                <hr style="border-color:var(--border); margin:20px 0;">
-                <button class="btn" onclick="toggleWakeLock()" id="wake-btn" style="width:100%;">WakeLock (Keep Screen On): OFF</button>
-                <button class="btn" onclick="requestNotif()" style="width:100%; margin-top:10px;">Enable Push Notifications</button>
+                <div style="margin-bottom:15px;"><label><input type="checkbox" id="set-analog" onchange="saveConfig()"> Enable Analog Face</label></div>
+                <hr style="border-color:var(--border);">
+                <button class="btn" onclick="toggleWakeLock()" id="wake-btn" style="width:100%;">WakeLock: OFF</button>
             </div>
         </div>
+
     </div>
 
     <div id="alarm-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:var(--panel); border:2px solid var(--ruby); padding:30px; border-radius:15px; z-index:9999; text-align:center; box-shadow:0 0 50px rgba(155,17,30,0.5);">
@@ -227,61 +201,100 @@
         <button class="btn" onclick="snoozeAlarm()" style="margin-top:20px; font-size:1.2rem; padding:15px 30px;">SNOOZE 5m</button>
     </div>
 
+    <audio id="beep-sound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU" type="audio/wav">
+    </audio>
+
     <script>
         /* =========================================
-           1. CORE DATA, INIT & STATE
+           1. CORE DATA & STATE MANAGEMENT
            ========================================= */
         const tzDB = [
-            { id: 'Etc/UTC', name: 'UTC / GMT', offset: 0, lat: 51.48, lng: 0.00 },
-            { id: 'America/New_York', name: 'New York (EST)', offset: -5, lat: 40.71, lng: -74.00 },
-            { id: 'America/Chicago', name: 'Chicago (CST)', offset: -6, lat: 41.87, lng: -87.62 },
-            { id: 'America/Denver', name: 'Denver (MST)', offset: -7, lat: 39.73, lng: -104.99 },
-            { id: 'America/Los_Angeles', name: 'Los Angeles (PST)', offset: -8, lat: 34.05, lng: -118.24 },
-            { id: 'America/Anchorage', name: 'Alaska (AKST)', offset: -9, lat: 61.21, lng: -149.90 },
-            { id: 'Pacific/Honolulu', name: 'Hawaii (HST)', offset: -10, lat: 21.30, lng: -157.85 },
-            { id: 'America/Toronto', name: 'Toronto', offset: -5, lat: 43.65, lng: -79.38 },
-            { id: 'America/Mexico_City', name: 'Mexico City', offset: -6, lat: 19.43, lng: -99.13 },
-            { id: 'America/Sao_Paulo', name: 'Sao Paulo', offset: -3, lat: -23.55, lng: -46.63 },
-            { id: 'America/Buenos_Aires', name: 'Buenos Aires', offset: -3, lat: -34.60, lng: -58.38 },
-            { id: 'Europe/London', name: 'London (GMT)', offset: 0, lat: 51.50, lng: -0.12 },
-            { id: 'Europe/Paris', name: 'Paris (CET)', offset: 1, lat: 48.85, lng: 2.35 },
-            { id: 'Europe/Berlin', name: 'Berlin', offset: 1, lat: 52.52, lng: 13.40 },
-            { id: 'Europe/Rome', name: 'Rome', offset: 1, lat: 41.90, lng: 12.49 },
-            { id: 'Europe/Moscow', name: 'Moscow (MSK)', offset: 3, lat: 55.75, lng: 37.61 },
-            { id: 'Africa/Cairo', name: 'Cairo', offset: 2, lat: 30.04, lng: 31.23 },
-            { id: 'Africa/Johannesburg', name: 'Johannesburg', offset: 2, lat: -26.20, lng: 28.04 },
-            { id: 'Asia/Jerusalem', name: 'Jerusalem', offset: 2, lat: 31.76, lng: 35.21 },
-            { id: 'Asia/Dubai', name: 'Dubai (GST)', offset: 4, lat: 25.20, lng: 55.27 },
-            { id: 'Asia/Kabul', name: 'Kabul', offset: 4.5, lat: 34.52, lng: 69.17 },
-            { id: 'Asia/Karachi', name: 'Karachi (PKT)', offset: 5, lat: 24.86, lng: 67.00 },
-            { id: 'Asia/Kolkata', name: 'India (IST)', offset: 5.5, lat: 28.61, lng: 77.20 },
-            { id: 'Asia/Dhaka', name: 'Dhaka', offset: 6, lat: 23.81, lng: 90.41 },
-            { id: 'Asia/Bangkok', name: 'Bangkok', offset: 7, lat: 13.75, lng: 100.50 },
-            { id: 'Asia/Singapore', name: 'Singapore', offset: 8, lat: 1.35, lng: 103.81 },
-            { id: 'Asia/Shanghai', name: 'Beijing/Shanghai', offset: 8, lat: 31.23, lng: 121.47 },
-            { id: 'Asia/Tokyo', name: 'Tokyo (JST)', offset: 9, lat: 35.67, lng: 139.65 },
-            { id: 'Asia/Seoul', name: 'Seoul', offset: 9, lat: 37.56, lng: 126.97 },
-            { id: 'Australia/Sydney', name: 'Sydney (AEST)', offset: 10, lat: -33.86, lng: 151.20 },
-            { id: 'Pacific/Auckland', name: 'Auckland', offset: 12, lat: -36.84, lng: 174.76 }
+            { id: 'America/New_York', name: 'New York (EST)', lat: 40.71, lng: -74.00 },
+            { id: 'America/Los_Angeles', name: 'Los Angeles (PST)', lat: 34.05, lng: -118.24 },
+            { id: 'Europe/London', name: 'London (GMT)', lat: 51.50, lng: -0.12 },
+            { id: 'Europe/Paris', name: 'Paris (CET)', lat: 48.85, lng: 2.35 },
+            { id: 'Asia/Dubai', name: 'Dubai (GST)', lat: 25.20, lng: 55.27 },
+            { id: 'Asia/Kolkata', name: 'India (IST)', lat: 28.61, lng: 77.20 },
+            { id: 'Asia/Tokyo', name: 'Tokyo (JST)', lat: 35.67, lng: 139.65 },
+            { id: 'Australia/Sydney', name: 'Sydney (AEST)', lat: -33.86, lng: 151.20 },
+            { id: 'America/Sao_Paulo', name: 'Brazil (BRT)', lat: -23.55, lng: -46.63 },
+            { id: 'Africa/Cairo', name: 'Egypt (EET)', lat: 30.04, lng: 31.23 }
         ];
 
-        let config = JSON.parse(localStorage.getItem('ccProData')) || {
-            lightMode: false, format24: false, showSec: true, analog: false,
-            dials: ['America/New_York', 'Europe/London', 'Asia/Tokyo'],
-            alarms: [], timers: [], laps: []
+        // Safe Initialization: Avoid Reference Errors from Stale Local Storage
+        let savedData = JSON.parse(localStorage.getItem('ccProDataMaster')) || {};
+        let config = {
+            lightMode: savedData.lightMode || false, 
+            format24: savedData.format24 || false, 
+            showSec: savedData.showSec ?? true, 
+            analog: savedData.analog || false,
+            dials: savedData.dials || ['America/New_York', 'Europe/London', 'Asia/Tokyo'],
+            alarms: savedData.alarms || [], 
+            timers: savedData.timers || [], 
+            laps: savedData.laps || []
         };
 
-        // Populate Datalist for Search
-        const datalist = document.getElementById('tz-datalist');
-        tzDB.forEach(t => datalist.innerHTML += `<option value="${t.id}">${t.name} (UTC${t.offset >= 0 ? '+'+t.offset : t.offset})</option>`);
+        let audioUnlocked = false;
+        function unlockAudio() {
+            if(audioUnlocked) return;
+            try {
+                const osc = new (window.AudioContext || window.webkitAudioContext)();
+                osc.resume();
+                audioUnlocked = true;
+            } catch(e) {}
+        }
+        document.body.addEventListener('touchstart', unlockAudio, {once:true});
+        document.body.addEventListener('click', unlockAudio, {once:true});
+
+        let activeOsc = null;
+        function playAlarmSound() {
+            try {
+                let actx = new (window.AudioContext || window.webkitAudioContext)();
+                if(activeOsc) return; 
+                activeOsc = actx.createOscillator();
+                let gain = actx.createGain();
+                activeOsc.connect(gain); gain.connect(actx.destination);
+                activeOsc.type = 'square'; activeOsc.frequency.setValueAtTime(800, actx.currentTime);
+                gain.gain.setValueAtTime(0.1, actx.currentTime);
+                activeOsc.start(); activeOsc.stop(actx.currentTime + 1.5);
+                setTimeout(() => activeOsc = null, 1500);
+            } catch(e) {}
+        }
+        function stopAlarmSound() {
+            if(activeOsc) { activeOsc.stop(); activeOsc = null; }
+        }
+
+        /* =========================================
+           2. UI & NAVIGATION
+           ========================================= */
+        function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); }
+
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            if(event && event.target) event.target.classList.add('active');
+            document.getElementById('sidebar').classList.remove('open');
+            if(viewId === 'view-converter') updateConverter();
+            if(viewId === 'view-timer') renderTimers();
+            if(viewId === 'view-stopwatch') renderLaps();
+            if(viewId === 'view-alarm') renderAlarms();
+        }
+        
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+            else document.exitFullscreen();
+            toggleMenu();
+        }
 
         function saveConfig() {
             config.lightMode = document.getElementById('set-light').checked;
             config.format24 = document.getElementById('set-24h').checked;
             config.showSec = document.getElementById('set-sec').checked;
             config.analog = document.getElementById('set-analog').checked;
-            localStorage.setItem('ccProData', JSON.stringify(config));
-            applyTheme();
+            localStorage.setItem('ccProDataMaster', JSON.stringify(config));
+            applyTheme(); buildDials();
         }
 
         function applyTheme() {
@@ -297,141 +310,74 @@
         }
         applyTheme();
 
-        // Audio & Notifications
-        let audioUnlocked = false;
-        function unlockAudio() {
-            if(audioUnlocked) return;
-            const osc = new (window.AudioContext || window.webkitAudioContext)();
-            osc.resume(); audioUnlocked = true;
-        }
-        document.body.addEventListener('touchstart', unlockAudio, {once:true});
-        document.body.addEventListener('click', unlockAudio, {once:true});
-
-        let activeOsc = null, audioCtx = null;
-        function playAlarmSound() {
-            try {
-                if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if(activeOsc) return; // already playing
-                activeOsc = audioCtx.createOscillator();
-                let gain = audioCtx.createGain();
-                activeOsc.connect(gain); gain.connect(audioCtx.destination);
-                activeOsc.type = 'square';
-                
-                // Beep pattern
-                gain.gain.setValueAtTime(0, audioCtx.currentTime);
-                for(let i=0; i<10; i++) {
-                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime + i*0.5);
-                    gain.gain.setValueAtTime(0, audioCtx.currentTime + i*0.5 + 0.2);
-                }
-                activeOsc.start(); activeOsc.stop(audioCtx.currentTime + 5);
-                setTimeout(() => activeOsc = null, 5000);
-            } catch(e) { console.log("Audio blocked"); }
-        }
-        function stopAlarmSound() {
-            if(activeOsc) { activeOsc.stop(); activeOsc = null; }
-        }
-
-        function requestNotif() {
-            if("Notification" in window) {
-                Notification.requestPermission().then(p => alert("Notifications: " + p));
-            } else alert("Push not supported on this browser.");
-        }
-        function sendNotif(title, body) {
-            if("Notification" in window && Notification.permission === "granted") {
-                new Notification(title, {body: body, icon: '/logo1.png'});
-            }
-        }
-
         /* =========================================
-           2. UI NAVIGATION
-           ========================================= */
-        function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); }
-        function switchView(viewId) {
-            document.querySelectorAll('.view-section, .nav-item').forEach(el => el.classList.remove('active'));
-            document.getElementById(viewId).classList.add('active');
-            event.target.classList.add('active');
-            toggleMenu();
-            if(viewId === 'view-converter') updateConverter();
-            if(viewId === 'view-timer') renderTimers();
-            if(viewId === 'view-stopwatch') renderLaps();
-            if(viewId === 'view-alarm') renderAlarms();
-        }
-        function toggleFullscreen() {
-            if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
-            else document.exitFullscreen();
-            toggleMenu();
-        }
-
-        /* =========================================
-           3. MAIN CLOCK & WORLD DIALS
+           3. MAIN CLOCK & DIALS ENGINE
            ========================================= */
         function buildDials() {
             const container = document.getElementById('dials-container');
             container.innerHTML = '';
+            let optStr = tzDB.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+
             config.dials.forEach((zone, idx) => {
-                let tzData = tzDB.find(t => t.id === zone) || {name: zone, id: zone};
+                let tzData = tzDB.find(t => t.id === zone) || tzDB[0];
                 let div = document.createElement('div');
                 div.className = 'dial';
                 div.innerHTML = `
-                    <input type="text" class="tz-search" value="${tzData.id}" list="tz-datalist" placeholder="Search...">
+                    <select class="tz-select" data-idx="${idx}">${optStr}</select>
                     <div class="dial-time" id="dt-${idx}">--:--</div>
-                    <div class="dial-label">${tzData.name.split(' ')[0]} <span class="dial-dst" id="dst-${idx}"></span></div>
+                    <div class="dial-label">${tzData.name.split(' ')[0]} ▾</div>
                     <button class="remove-dial" onclick="removeDial(${idx})">X</button>
                 `;
-                div.querySelector('input').addEventListener('change', (e) => {
-                    if(tzDB.find(t=>t.id===e.target.value)) {
-                        config.dials[idx] = e.target.value;
-                        saveConfig(); buildDials();
-                    }
+                div.querySelector('select').value = zone;
+                div.querySelector('select').addEventListener('change', (e) => {
+                    config.dials[idx] = e.target.value;
+                    saveConfig();
                 });
                 container.appendChild(div);
             });
         }
 
-        function addDial() { if(config.dials.length >= 10) return alert("Max 10 dials."); config.dials.push('Etc/UTC'); saveConfig(); buildDials(); }
-        function removeDial(idx) { config.dials.splice(idx, 1); saveConfig(); buildDials(); }
+        function addDial() {
+            if(config.dials.length >= 8) return alert("Maximum 8 dials allowed.");
+            config.dials.push('Europe/London');
+            saveConfig();
+        }
+        function removeDial(idx) {
+            config.dials.splice(idx, 1);
+            saveConfig();
+        }
         buildDials();
 
         /* =========================================
            4. TIMEZONE CONVERTER
            ========================================= */
         function updateConverter() {
-            const val = parseFloat(document.getElementById('tz-slider').value);
-            let hr = Math.floor(val); let min = (val % 1 === 0.5) ? '30' : '00';
-            let ampm = hr >= 12 && hr < 24 ? 'PM' : 'AM';
-            let hr12 = hr % 12 || 12;
-            document.getElementById('slider-val').innerText = `${hr12}:${min} ${ampm} (Local)`;
+            const val = parseInt(document.getElementById('tz-slider').value);
+            let ampm = val >= 12 ? 'PM' : 'AM';
+            let hr12 = val % 12 || 12;
+            document.getElementById('slider-val').innerText = `${hr12}:00 ${ampm} (Local)`;
 
             const res = document.getElementById('converter-results');
             res.innerHTML = '';
-            const localOff = -(new Date().getTimezoneOffset() / 60);
+            const localOffset = new Date().getTimezoneOffset();
             
             config.dials.forEach(zone => {
-                let tzData = tzDB.find(t => t.id === zone);
-                if(!tzData) return;
-                
-                // Get accurate current offset handling DST
-                let dateStr = new Date().toLocaleString("en-US", {timeZone: zone, timeZoneName: "shortOffset"});
-                let gmtMatch = dateStr.match(/GMT([+-]\d+)?/);
-                let targetOff = gmtMatch && gmtMatch[1] ? parseInt(gmtMatch[1]) : 0;
-                
-                let diffHours = targetOff - localOff;
-                let targetTime = val + diffHours;
-                if(targetTime < 0) targetTime += 24;
-                if(targetTime >= 24) targetTime -= 24;
-                
-                let tHr = Math.floor(targetTime);
-                let tMin = (targetTime % 1 === 0.5) ? '30' : '00';
-                let tAmpm = tHr >= 12 ? 'PM' : 'AM';
-                let tHr12 = tHr % 12 || 12;
-                let sign = diffHours > 0 ? '+' : '';
+                try {
+                    let targetDate = new Date().toLocaleString("en-US", {timeZone: zone});
+                    let targetOffset = (new Date(targetDate).getTime() - new Date().getTime()) / 60000;
+                    let diffHours = (targetOffset + localOffset) / 60;
+                    let targetHr = (val + diffHours + 24) % 24; 
+                    let tAmpm = targetHr >= 12 ? 'PM' : 'AM';
+                    let tHr12 = Math.floor(targetHr) % 12 || 12;
+                    let sign = diffHours >= 0 ? '+' : '';
 
-                res.innerHTML += `
-                    <div class="dial" style="min-width:160px;">
-                        <div class="dial-time">${tHr12}:${tMin} <span style="font-size:0.8rem">${tAmpm}</span></div>
-                        <div class="dial-label">${tzData.name}</div>
-                        <div style="font-size:0.65rem; color:var(--sapphire); margin-top:5px; font-weight:bold;">${sign}${diffHours} HRS DIFF</div>
-                    </div>`;
+                    res.innerHTML += `
+                        <div class="dial">
+                            <div class="dial-time">${tHr12}:00 <span style="font-size:0.8rem">${tAmpm}</span></div>
+                            <div class="dial-label">${zone.split('/')[1].replace('_',' ')}</div>
+                            <div style="font-size:0.6rem; color:#888; margin-top:5px;">${sign}${diffHours} HRS</div>
+                        </div>`;
+                } catch(e) {}
             });
         }
 
@@ -441,7 +387,7 @@
         function addTimer(mins = null) {
             let val = mins || parseInt(document.getElementById('new-timer-min').value);
             if(isNaN(val) || val < 1) return;
-            config.timers.push({ id: Date.now(), total: val*60, rem: val*60, run: false, loop: false });
+            config.timers.push({ id: Date.now(), total: val*60, rem: val*60, run: false });
             saveConfig(); renderTimers();
         }
         function toggleTmr(id) {
@@ -451,10 +397,6 @@
         function resetTmr(id) {
             let t = config.timers.find(x => x.id === id);
             if(t) { t.run = false; t.rem = t.total; saveConfig(); renderTimers(); }
-        }
-        function toggleLoop(id) {
-            let t = config.timers.find(x => x.id === id);
-            if(t) { t.loop = !t.loop; saveConfig(); renderTimers(); }
         }
         function delTmr(id) {
             config.timers = config.timers.filter(x => x.id !== id);
@@ -467,15 +409,12 @@
                 let m = Math.floor(t.rem/60).toString().padStart(2,'0');
                 let s = (t.rem%60).toString().padStart(2,'0');
                 list.innerHTML += `
-                    <div class="timer-card">
-                        <div class="timer-display">${m}:${s}</div>
-                        <div style="display:flex; flex-direction:column; gap:5px;">
-                            <div>
-                                <button class="btn ${t.run?'':'btn-primary'}" onclick="toggleTmr(${t.id})" style="padding:5px 10px;">${t.run?'PAUSE':'START'}</button>
-                                <button class="btn" onclick="resetTmr(${t.id})" style="padding:5px 10px;">RST</button>
-                                <button class="btn" onclick="delTmr(${t.id})" style="padding:5px 10px; color:var(--ruby);">X</button>
-                            </div>
-                            <label style="font-size:0.7rem; color:#888;"><input type="checkbox" ${t.loop?'checked':''} onchange="toggleLoop(${t.id})"> Loop</label>
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid var(--border);">
+                        <div style="font-size: 2rem; font-variant-numeric: tabular-nums; color: var(--ruby); font-weight: bold;">${m}:${s}</div>
+                        <div>
+                            <button class="btn ${t.run?'':'btn-primary'}" onclick="toggleTmr(${t.id})">${t.run?'PAUSE':'START'}</button>
+                            <button class="btn" onclick="resetTmr(${t.id})">RST</button>
+                            <button class="btn" onclick="delTmr(${t.id})" style="color:var(--ruby);">X</button>
                         </div>
                     </div>
                 `;
@@ -493,7 +432,7 @@
         }
         function lapStopwatch() {
             if(!swRun) return;
-            config.laps.unshift(swTime); // save to memory
+            config.laps.unshift(swTime); 
             saveConfig(); renderLaps();
         }
         function resetStopwatch() {
@@ -517,79 +456,61 @@
         }
 
         /* =========================================
-           7. SMART ALARMS
+           7. ALARMS & SNOOZE
            ========================================= */
         let snoozedAlarms = [];
-        function addAlarm() {
-            let t = document.getElementById('alarm-time').value;
-            let lbl = document.getElementById('alarm-label').value || "Alarm";
-            let days = Array.from(document.querySelectorAll('.al-day:checked')).map(cb => parseInt(cb.value));
-            if(!t) return alert("Select time.");
-            
-            config.alarms.push({ id: Date.now(), time: t, label: lbl, days: days, active: true });
-            saveConfig(); renderAlarms();
-        }
-        function toggleAlarm(id) {
-            let a = config.alarms.find(x => x.id === id);
-            if(a) { a.active = !a.active; saveConfig(); renderAlarms(); }
-        }
-        function delAlarm(id) {
-            config.alarms = config.alarms.filter(x => x.id !== id);
-            saveConfig(); renderAlarms();
-        }
+        let curRingLabel = "";
+        
         function renderAlarms() {
             const list = document.getElementById('alarms-list');
             list.innerHTML = '<h3>Active Alarms</h3>';
-            const dayNames = ['Su','Mo','Tu','We','Th','Fr','Sa'];
-            config.alarms.forEach(a => {
-                let dStr = a.days.length === 0 ? 'Once' : a.days.length === 7 ? 'Everyday' : a.days.map(d => dayNames[d]).join(', ');
+            if(config.alarms.length === 0) list.innerHTML += '<p style="color:#888;font-size:0.8rem;">No alarms set.</p>';
+            
+            config.alarms.forEach((a, i) => {
                 list.innerHTML += `
-                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding:15px 0; opacity:${a.active?1:0.5};">
-                        <div style="text-align:left;">
-                            <div style="font-size:1.8rem; color:var(--gold); font-weight:bold;">${a.time}</div>
-                            <div style="font-size:0.7rem; color:#888;">${a.label} | ${dStr}</div>
-                        </div>
-                        <div>
-                            <button class="btn" style="padding:8px;" onclick="toggleAlarm(${a.id})">${a.active?'ON':'OFF'}</button>
-                            <button class="btn" style="padding:8px; color:var(--ruby);" onclick="delAlarm(${a.id})">X</button>
-                        </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding:10px 0;">
+                        <span style="font-size:1.5rem; color:var(--gold);">${a.time}</span>
+                        <span style="font-size:0.8rem; color:#888;">${a.label}</span>
+                        <button class="btn" style="color:var(--ruby); border-color:var(--ruby);" onclick="removeAlarm(${i})">Delete</button>
                     </div>
                 `;
             });
         }
-        
-        let lastChkMin = -1;
+        function addAlarm() {
+            let t = document.getElementById('alarm-time').value;
+            let lbl = document.getElementById('alarm-label').value || "Alarm";
+            if(!t) return alert("Please select a time.");
+            config.alarms.push({ id: Date.now(), time: t, label: lbl });
+            saveConfig(); renderAlarms();
+        }
+        function removeAlarm(i) {
+            config.alarms.splice(i, 1);
+            saveConfig(); renderAlarms();
+        }
+
+        let lastCheckedMin = -1;
         function checkAlarmsLogic(now) {
             let curMin = now.getMinutes();
-            if(curMin === lastCheckedMin) return;
+            if(curMin === lastCheckedMin) return; 
             lastCheckedMin = curMin;
 
             let curTimeStr = now.getHours().toString().padStart(2,'0') + ":" + curMin.toString().padStart(2,'0');
-            let curDay = now.getDay();
 
             config.alarms.forEach(a => {
-                if(a.active && a.time === curTimeStr) {
-                    if(a.days.length === 0 || a.days.includes(curDay)) {
-                        triggerAlarmUI(a.label);
-                        if(a.days.length === 0) { a.active = false; saveConfig(); renderAlarms(); } // One-time off
-                    }
-                }
+                if(a.time === curTimeStr) triggerAlarmUI(a.label);
             });
-
-            // Check snoozes
+            
             snoozedAlarms = snoozedAlarms.filter(sa => {
                 if(sa.time === curTimeStr) { triggerAlarmUI(sa.label); return false; }
                 return true;
             });
         }
-        
-        let curRingLabel = "";
+
         function triggerAlarmUI(label) {
             playAlarmSound();
-            sendNotif("Alarm Ringing", label);
+            curRingLabel = label;
             document.getElementById('alarm-modal-label').innerText = label;
             document.getElementById('alarm-modal').style.display = 'block';
-            curRingLabel = label;
         }
         function stopAlarmModal() {
             stopAlarmSound();
@@ -600,8 +521,8 @@
             document.getElementById('alarm-modal').style.display = 'none';
             let d = new Date(); d.setMinutes(d.getMinutes() + 5);
             snoozedAlarms.push({ time: d.getHours().toString().padStart(2,'0')+":"+d.getMinutes().toString().padStart(2,'0'), label: curRingLabel + " (Snoozed)" });
-            alert("Snoozed for 5 minutes.");
         }
+        renderAlarms();
 
         /* =========================================
            8. DATE CALCULATOR
@@ -611,84 +532,108 @@
             let d2 = new Date(document.getElementById('date2').value);
             if(isNaN(d1) || isNaN(d2)) return alert("Select valid dates.");
             let diffDays = Math.abs(d2 - d1) / (1000 * 60 * 60 * 24);
-            document.getElementById('date-diff-res').innerText = `${diffDays} Days Difference`;
+            document.getElementById('date-diff-res').innerText = `${diffDays} days difference.`;
         }
-        function popDateMetrics() {
-            let n = new Date(); let s = new Date(n.getFullYear(), 0, 0);
-            let doy = Math.floor((n - s) / 86400000);
+
+        function populateTodayMetrics() {
+            let now = new Date();
+            let start = new Date(now.getFullYear(), 0, 0);
+            let diff = now - start;
+            let oneDay = 1000 * 60 * 60 * 24;
+            let dayOfYear = Math.floor(diff / oneDay);
+            let weekNum = Math.ceil(dayOfYear / 7);
+            
             document.getElementById('today-metrics').innerHTML = `
-                Day of Year: <strong style="color:var(--accent)">${doy} / 365</strong><br>
-                Week Number: <strong style="color:var(--accent)">Week ${Math.ceil(doy/7)}</strong><br>
-                Leap Year: <strong style="color:var(--accent)">${n.getFullYear()%4===0?'Yes':'No'}</strong>
+                Day of the Year: <strong style="color:var(--accent)">${dayOfYear} / 365</strong><br>
+                Week Number: <strong style="color:var(--accent)">Week ${weekNum}</strong><br>
+                Is Leap Year: <strong style="color:var(--accent)">${(now.getFullYear() % 4 === 0) ? 'Yes' : 'No'}</strong>
             `;
         }
-        popDateMetrics();
+        populateTodayMetrics();
 
         /* =========================================
-           9. SOLAR API
+           9. REAL WORLD / SUNRISE API
            ========================================= */
+        const solarSelect = document.getElementById('solar-city-select');
+        tzDB.forEach(t => solarSelect.innerHTML += `<option value="${t.id}">${t.name}</option>`);
+
         async function fetchSolarData() {
-            let selId = document.getElementById('solar-search').value;
+            let selId = solarSelect.value;
             let loc = tzDB.find(t => t.id === selId);
-            if(!loc) return;
-            document.getElementById('solar-results').style.display = 'block';
+            const resCard = document.getElementById('solar-results');
+            resCard.style.display = 'block';
             document.getElementById('sun-rise').innerText = "Loading...";
+            
             try {
-                let res = await fetch(`https://api.sunrise-sunset.org/json?lat=${loc.lat}&lng=${loc.lng}&formatted=0`);
-                let data = await res.json();
+                let response = await fetch(`https://api.sunrise-sunset.org/json?lat=${loc.lat}&lng=${loc.lng}&formatted=0`);
+                let data = await response.json();
                 if(data.status === "OK") {
                     document.getElementById('sun-rise').innerText = new Date(data.results.sunrise).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                     document.getElementById('sun-set').innerText = new Date(data.results.sunset).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    document.getElementById('sun-length').innerText = (data.results.day_length / 3600).toFixed(2) + " Hrs";
+                    document.getElementById('sun-length').innerText = (data.results.day_length / 3600).toFixed(2) + " Hours";
                 }
             } catch(e) { document.getElementById('sun-rise').innerText = "API Error"; }
         }
 
         /* =========================================
-           10. THE GLOBAL ENGINE TICK
+           10. MASTER GLOBAL ENGINE LOOP
            ========================================= */
         function globalTick() {
-            const now = new Date();
-            
-            // 1. Update Main Clock & Dials
-            let opts = { hour: '2-digit', minute: '2-digit', hour12: !config.format24 };
-            let timeStr = now.toLocaleTimeString('en-US', opts).split(' ');
-            document.getElementById('time').innerHTML = `${timeStr[0]}<span class="sec-text" style="display:${config.showSec?'inline':'none'}">:${now.getSeconds().toString().padStart(2,'0')}</span> <span style="font-size:1.5vw;color:#777">${!config.format24 ? timeStr[1] : ''}</span>`;
-            document.getElementById('date').innerText = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
-            document.getElementById('utc-display').innerText = `UTC: ${now.toISOString().substring(11, 16)}Z`;
+            try {
+                const now = new Date();
+                
+                // 1. Clock Render
+                let opts = { hour: '2-digit', minute: '2-digit', hour12: !config.format24 };
+                let timeStr = now.toLocaleTimeString('en-US', opts).split(' ');
+                document.getElementById('time').innerHTML = `${timeStr[0]}<span class="sec-text" style="display:${config.showSec?'inline':'none'}">:${now.getSeconds().toString().padStart(2,'0')}</span> <span style="font-size:1.5rem;color:#777">${!config.format24 ? (timeStr[1]||'') : ''}</span>`;
+                
+                document.getElementById('date').innerText = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+                document.getElementById('epoch-display').innerText = `Unix Epoch: ${Math.floor(now.getTime()/1000)}`;
 
-            if(config.analog) {
-                document.getElementById('hr-hand').style.transform = `translateX(-50%) rotate(${(now.getHours()%12 * 30) + (now.getMinutes()*0.5)}deg)`;
-                document.getElementById('min-hand').style.transform = `translateX(-50%) rotate(${now.getMinutes() * 6}deg)`;
-                document.getElementById('sec-hand').style.transform = `translateX(-50%) rotate(${now.getSeconds() * 6}deg)`;
-            }
-
-            config.dials.forEach((zone, i) => {
-                let el = document.getElementById(`dt-${i}`);
-                let dstEl = document.getElementById(`dst-${i}`);
-                if(el && dstEl) {
-                    try { 
-                        el.innerText = now.toLocaleTimeString('en-GB', { hour12: !config.format24, hour: '2-digit', minute: '2-digit', timeZone: zone }); 
-                        // DST Check logic (Is offset different from January offset?)
-                        let jan = new Date(now.getFullYear(), 0, 1).toLocaleString("en-US", {timeZone: zone, timeZoneName: "shortOffset"});
-                        let cur = now.toLocaleString("en-US", {timeZone: zone, timeZoneName: "shortOffset"});
-                        dstEl.innerText = (jan !== cur) ? "(DST)" : "";
-                    } catch(e) {}
+                if(config.analog) {
+                    document.getElementById('hr-hand').style.transform = `translateX(-50%) rotate(${(now.getHours()%12 * 30) + (now.getMinutes()*0.5)}deg)`;
+                    document.getElementById('min-hand').style.transform = `translateX(-50%) rotate(${now.getMinutes() * 6}deg)`;
+                    document.getElementById('sec-hand').style.transform = `translateX(-50%) rotate(${now.getSeconds() * 6}deg)`;
                 }
-            });
 
-            // 2. Stopwatch Logic
-            if(swRun) {
-                swTime = Date.now() - swStart;
-                document.getElementById('sw-display').innerText = formatSw(swTime);
-            }
+                config.dials.forEach((zone, i) => {
+                    let el = document.getElementById(`dt-${i}`);
+                    if(el) {
+                        try { el.innerText = now.toLocaleTimeString('en-GB', { hour12: !config.format24, hour: '2-digit', minute: '2-digit', timeZone: zone }); } 
+                        catch(e) {}
+                    }
+                });
 
-            // 3. Alarms
-            checkAlarmsLogic(now);
+                // 2. Stopwatch Process
+                if(swRun) {
+                    swTime = Date.now() - swStart;
+                    document.getElementById('sw-display').innerText = formatSw(swTime);
+                }
 
+                // 3. Timers Process
+                let needTimerRender = false;
+                config.timers.forEach(t => {
+                    if(t.run) {
+                        t.rem = t.total - Math.floor((Date.now() - t.startTick) / 1000);
+                        if(t.rem <= 0) {
+                            playAlarmSound();
+                            t.run = false; t.rem = t.total; 
+                            alert("TIMER COMPLETE!");
+                        }
+                        needTimerRender = true;
+                    } else {
+                        t.startTick = Date.now() - ((t.total - t.rem) * 1000); // Anchor paused time
+                    }
+                });
+                if(needTimerRender) renderTimers();
+
+                // 4. Alarm Process
+                checkAlarmsLogic(now);
+
+            } catch(e) { console.error("Engine fault", e); }
             requestAnimationFrame(globalTick);
         }
-        requestAnimationFrame(globalTick); // Start the engine
+        requestAnimationFrame(globalTick);
 
         /* =========================================
            11. WAKELOCK
@@ -696,13 +641,20 @@
         let wakeLock = null, wakeReq = false;
         async function toggleWakeLock() {
             const btn = document.getElementById('wake-btn');
-            if (!('wakeLock' in navigator)) return btn.innerText = "WakeLock Not Supported";
+            if (!('wakeLock' in navigator)) return btn.innerText = "WakeLock Not Supported (iOS)";
+            
             wakeReq = !wakeReq;
             if(wakeReq) {
-                try { wakeLock = await navigator.wakeLock.request('screen'); btn.innerText = "WakeLock: ON"; btn.classList.add('active-status'); } 
-                catch(e) { btn.innerText = "WakeLock: Error"; wakeReq = false; }
+                try {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    btn.innerText = "WakeLock: ON";
+                    btn.classList.add('active-status');
+                } catch(e) { btn.innerText = "WakeLock: Error"; wakeReq = false; }
             } else {
-                wakeLock?.release(); wakeLock = null; btn.innerText = "WakeLock: OFF"; btn.classList.remove('active-status');
+                wakeLock?.release();
+                wakeLock = null;
+                btn.innerText = "WakeLock: OFF";
+                btn.classList.remove('active-status');
             }
         }
         document.addEventListener('visibilitychange', async () => {

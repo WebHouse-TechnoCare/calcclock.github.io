@@ -9,8 +9,9 @@
         :root {
             --gold: #d4af37;
             --ruby: #9b111e;
+            --sapphire: #0f52ba;
             --bg: #050505;
-            --accent: var(--gold); /* Dynamic accent color */
+            --accent: var(--gold); 
         }
 
         body {
@@ -27,7 +28,6 @@
             transition: color 1s ease, background 0.5s;
         }
 
-        /* Ambient Canvas Background */
         #ambientCanvas {
             position: absolute;
             top: 0;
@@ -53,7 +53,6 @@
             position: relative;
             text-align: center;
             z-index: 2;
-            pointer-events: none; 
         }
 
         #time {
@@ -63,6 +62,7 @@
             margin: 0;
             line-height: 1;
             text-shadow: 0 0 20px rgba(0,0,0,0.5);
+            font-variant-numeric: tabular-nums; /* Keeps numbers from shifting */
         }
 
         #date {
@@ -73,18 +73,32 @@
             margin-top: 15px;
         }
 
-        /* --- ADDED: World Clock Styles --- */
+        /* World Clock Styles */
         .sub-dials {
             display: flex;
-            gap: 40px;
+            gap: 30px;
             margin-top: 30px;
             justify-content: center;
             transition: opacity 0.5s ease;
         }
 
         .dial {
+            position: relative;
             text-align: center;
-            min-width: 100px;
+            min-width: 90px;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 10px;
+            transition: background 0.3s;
+        }
+
+        .dial:hover { background: rgba(255,255,255,0.05); }
+
+        .tz-select {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0; /* Invisible but clickable */
+            cursor: pointer;
         }
 
         .dial-time {
@@ -97,16 +111,18 @@
 
         .dial-label {
             font-size: 0.6rem;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
             text-transform: uppercase;
             color: #555;
             margin-top: 5px;
         }
 
-        /* Hide dials when Pomodoro is active */
-        .pomo-active .sub-dials {
-            opacity: 0;
-            pointer-events: none;
+        /* Dynamic Tool Controls (Pomo/Stopwatch) */
+        .tool-controls {
+            display: none; /* Hidden by default */
+            gap: 15px;
+            margin-top: 30px;
+            justify-content: center;
         }
 
         .controls {
@@ -142,10 +158,10 @@
             box-shadow: 0 0 10px rgba(212, 175, 55, 0.1);
         }
 
-        @media (max-width: 600px) {
-            #time { font-size: 4rem; }
-            .sub-dials { gap: 15px; margin-top: 20px; }
-            .dial-time { font-size: 1rem; }
+        @media (max-width: 700px) {
+            #time { font-size: 4.5rem; }
+            .sub-dials { gap: 10px; flex-wrap: wrap; }
+            .controls { flex-wrap: wrap; justify-content: center; padding: 0 20px; bottom: 20px; }
         }
     </style>
 </head>
@@ -153,185 +169,274 @@
 
     <canvas id="ambientCanvas"></canvas>
 
-    <a href="/" class="home-btn">
-        <img src="/logo1.png" alt="CalcClock Home">
-    </a>
+    <a href="/" class="home-btn"><img src="/logo1.png" alt="Home"></a>
 
     <div class="watch-face">
         <h1 id="time">00:00:00</h1>
         <div id="date">CALCCLOCK CHRONOMETER</div>
 
         <div class="sub-dials" id="subDials">
-            <div class="dial">
-                <div class="dial-time" id="nyc">00:00</div>
-                <div class="dial-label">New York</div>
             </div>
-            <div class="dial">
-                <div class="dial-time" id="tokyo">00:00</div>
-                <div class="dial-label">Tokyo</div>
-            </div>
-            <div class="dial">
-                <div class="dial-time" id="london">00:00</div>
-                <div class="dial-label">London</div>
-            </div>
+
+        <div class="tool-controls" id="toolControls">
+            <button class="btn-util" id="btn-action">START</button>
+            <button class="btn-util" id="btn-reset">RESET</button>
+            <button class="btn-util" id="btn-exit" style="border-color: #555;">EXIT MODE</button>
         </div>
     </div>
 
-    <div class="controls">
-        <button class="btn-util" id="pomoBtn">Pomodoro: OFF</button>
+    <div class="controls" id="mainControls">
+        <button class="btn-util" id="swBtn">Stopwatch</button>
+        <button class="btn-util" id="pomoBtn">Pomodoro</button>
         <button class="btn-util" id="wakeBtn">Stay Awake: OFF</button>
         <button class="btn-util" id="fsBtn">Fullscreen</button>
     </div>
 
     <script>
-        // --- 1. Ambient Starfield Logic ---
+        // --- 1. Ambient Background ---
         const canvas = document.getElementById('ambientCanvas');
         const ctx = canvas.getContext('2d');
-        let particles = [];
-        let mouse = { x: -100, y: -100 };
+        let particles = [], mouse = { x: -100, y: -100 };
 
         function initCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
             particles = [];
-            for(let i = 0; i < 100; i++) {
-                particles.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    size: Math.random() * 1.5,
-                    speedX: (Math.random() - 0.5) * 0.2,
-                    speedY: (Math.random() - 0.5) * 0.2
-                });
-            }
+            for(let i=0; i<80; i++) particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, size: Math.random()*1.5, speedX: (Math.random()-0.5)*0.2, speedY: (Math.random()-0.5)*0.2 });
         }
-
         function drawAmbient() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent');
             ctx.globalAlpha = 0.2;
-            
             particles.forEach(p => {
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fill();
-
-                p.x += p.speedX + (mouse.x - canvas.width/2) * 0.001;
-                p.y += p.speedY + (mouse.y - canvas.height/2) * 0.001;
-
-                if(p.x < 0) p.x = canvas.width;
-                if(p.x > canvas.width) p.x = 0;
-                if(p.y < 0) p.y = canvas.height;
-                if(p.y > canvas.height) p.y = 0;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+                p.x += p.speedX + (mouse.x - canvas.width/2)*0.001; p.y += p.speedY + (mouse.y - canvas.height/2)*0.001;
+                if(p.x < 0) p.x = canvas.width; if(p.x > canvas.width) p.x = 0;
+                if(p.y < 0) p.y = canvas.height; if(p.y > canvas.height) p.y = 0;
             });
             requestAnimationFrame(drawAmbient);
         }
-
-        window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+        window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
         window.addEventListener('resize', initCanvas);
-        initCanvas();
-        drawAmbient();
+        initCanvas(); drawAmbient();
 
-        // --- 2. Pomodoro Logic ---
-        let pomoActive = false;
-        let pomoTime = 25 * 60; 
-        let pomoInterval = null;
-        const pomoBtn = document.getElementById('pomoBtn');
+        // --- 2. World Clock Data & Injection ---
+        const tzList = [
+            { id: 'America/New_York', name: 'USA (EST)' },
+            { id: 'America/Los_Angeles', name: 'USA (PST)' },
+            { id: 'Europe/London', name: 'UK (LDN)' },
+            { id: 'Europe/Paris', name: 'Paris' },
+            { id: 'Asia/Kolkata', name: 'India' },
+            { id: 'Asia/Tokyo', name: 'Tokyo' },
+            { id: 'Asia/Dubai', name: 'Dubai' },
+            { id: 'Australia/Sydney', name: 'Sydney' }
+        ];
+        
+        // Default 4 Dials
+        let activeZones = ['America/New_York', 'Europe/London', 'Asia/Kolkata', 'Asia/Tokyo'];
+        const subDialsContainer = document.getElementById('subDials');
 
-        function updateDisplay() {
-            const timeEl = document.getElementById('time');
-            const dateEl = document.getElementById('date');
-            const now = new Date();
+        function buildDials() {
+            subDialsContainer.innerHTML = '';
+            // Create options HTML once
+            let optionsHTML = tzList.map(tz => `<option value="${tz.id}">${tz.name}</option>`).join('');
 
-            if (!pomoActive) {
-                document.body.classList.remove('pomo-active'); // Show sub-dials
-                timeEl.innerText = now.toLocaleTimeString('en-GB', { hour12: false });
+            activeZones.forEach((zoneId, index) => {
+                let tzData = tzList.find(t => t.id === zoneId);
+                let dial = document.createElement('div');
+                dial.className = 'dial';
+                dial.innerHTML = `
+                    <select class="tz-select" data-index="${index}">
+                        ${optionsHTML}
+                    </select>
+                    <div class="dial-time" id="dial-time-${index}">00:00</div>
+                    <div class="dial-label" id="dial-label-${index}">${tzData.name}</div>
+                `;
+                // Set the correct option as selected
+                dial.querySelector('select').value = zoneId;
                 
-                // --- ADDED: World Clock Update Logic ---
-                const zones = {
-                    nyc: 'America/New_York',
-                    tokyo: 'Asia/Tokyo',
-                    london: 'Europe/London'
-                };
+                // Event Listener for changing timezone
+                dial.querySelector('select').addEventListener('change', (e) => {
+                    activeZones[index] = e.target.value;
+                    document.getElementById(`dial-label-${index}`).innerText = tzList.find(t => t.id === e.target.value).name;
+                    updateClock();
+                });
+                subDialsContainer.appendChild(dial);
+            });
+        }
+        buildDials();
 
-                for (const [id, zone] of Object.entries(zones)) {
-                    const el = document.getElementById(id);
-                    if (el) {
-                        el.innerText = now.toLocaleTimeString('en-GB', {
-                            hour12: false,
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            timeZone: zone
-                        });
-                    }
-                }
+        // --- 3. Core App State & Logic ---
+        const timeEl = document.getElementById('time');
+        const dateEl = document.getElementById('date');
+        const toolControls = document.getElementById('toolControls');
+        const mainControls = document.getElementById('mainControls');
+        const btnAction = document.getElementById('btn-action');
+        const btnReset = document.getElementById('btn-reset');
+        const btnExit = document.getElementById('btn-exit');
 
-                const options = { weekday: 'long', day: 'numeric', month: 'long' };
-                dateEl.innerText = now.toLocaleDateString('en-GB', options);
+        let currentMode = 'clock'; // 'clock', 'pomo', 'stopwatch'
+        
+        // Pomodoro State
+        let pomoTime = 25 * 60;
+        let pomoRunning = false;
+        let pomoInterval;
+
+        // Stopwatch State
+        let swTime = 0;
+        let swRunning = false;
+        let swInterval;
+        let swStartTime = 0;
+
+        function setMode(mode) {
+            currentMode = mode;
+            if(mode === 'clock') {
+                subDialsContainer.style.display = 'flex';
+                toolControls.style.display = 'none';
+                mainControls.style.display = 'flex';
                 document.documentElement.style.setProperty('--accent', 'var(--gold)');
+                updateClock();
             } else {
-                document.body.classList.add('pomo-active'); // Hide sub-dials
-                let mins = Math.floor(pomoTime / 60);
-                let secs = pomoTime % 60;
-                timeEl.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-                dateEl.innerText = "FOCUS SESSION ACTIVE";
-                document.documentElement.style.setProperty('--accent', 'var(--ruby)');
+                subDialsContainer.style.display = 'none';
+                toolControls.style.display = 'flex';
+                mainControls.style.display = 'none';
+                
+                if(mode === 'pomo') {
+                    document.documentElement.style.setProperty('--accent', 'var(--ruby)');
+                    dateEl.innerText = "FOCUS SESSION";
+                    btnAction.innerText = pomoRunning ? "PAUSE" : "START";
+                    updatePomoDisplay();
+                } else if (mode === 'stopwatch') {
+                    document.documentElement.style.setProperty('--accent', 'var(--sapphire)');
+                    dateEl.innerText = "PRECISION STOPWATCH";
+                    btnAction.innerText = swRunning ? "PAUSE" : "START";
+                    updateSwDisplay();
+                }
             }
         }
 
-        pomoBtn.addEventListener('click', () => {
-            pomoActive = !pomoActive;
-            if (pomoActive) {
-                pomoTime = 25 * 60;
-                pomoBtn.innerText = "Focus: ON (25m)";
-                pomoBtn.classList.add('active-status');
-                pomoInterval = setInterval(() => {
-                    pomoTime--;
-                    if(pomoTime <= 0) {
-                        pomoActive = false;
-                        clearInterval(pomoInterval);
-                        alert("Focus session complete! Take a break.");
-                    }
-                    updateDisplay();
-                }, 1000);
-            } else {
-                clearInterval(pomoInterval);
-                pomoBtn.innerText = "Pomodoro: OFF";
-                pomoBtn.classList.remove('active-status');
+        // Action Button Logic (Start/Pause)
+        btnAction.addEventListener('click', () => {
+            if(currentMode === 'pomo') {
+                pomoRunning = !pomoRunning;
+                btnAction.innerText = pomoRunning ? "PAUSE" : "START";
+                if(pomoRunning) {
+                    pomoInterval = setInterval(() => {
+                        pomoTime--;
+                        if(pomoTime <= 0) {
+                            clearInterval(pomoInterval);
+                            pomoRunning = false;
+                            pomoTime = 25 * 60;
+                            btnAction.innerText = "START";
+                            alert("Session complete!");
+                        }
+                        updatePomoDisplay();
+                    }, 1000);
+                } else { clearInterval(pomoInterval); }
+            } 
+            else if (currentMode === 'stopwatch') {
+                swRunning = !swRunning;
+                btnAction.innerText = swRunning ? "PAUSE" : "START";
+                if(swRunning) {
+                    swStartTime = Date.now() - swTime;
+                    swInterval = setInterval(() => {
+                        swTime = Date.now() - swStartTime;
+                        updateSwDisplay();
+                    }, 10); // 10ms for smooth centiseconds
+                } else { clearInterval(swInterval); }
             }
-            updateDisplay();
         });
 
-        setInterval(() => { if(!pomoActive) updateDisplay(); }, 1000);
-        updateDisplay();
+        // Reset Button Logic
+        btnReset.addEventListener('click', () => {
+            if(currentMode === 'pomo') {
+                clearInterval(pomoInterval);
+                pomoRunning = false;
+                pomoTime = 25 * 60;
+                btnAction.innerText = "START";
+                updatePomoDisplay();
+            } else if (currentMode === 'stopwatch') {
+                clearInterval(swInterval);
+                swRunning = false;
+                swTime = 0;
+                btnAction.innerText = "START";
+                updateSwDisplay();
+            }
+        });
 
-        // --- 3. Fullscreen & Wake Lock ---
-        const fsBtn = document.getElementById('fsBtn');
-        fsBtn.addEventListener('click', () => {
+        // Exit Mode Logic
+        btnExit.addEventListener('click', () => setMode('clock'));
+
+        // Display Updaters
+        function updatePomoDisplay() {
+            let m = Math.floor(pomoTime / 60).toString().padStart(2, '0');
+            let s = (pomoTime % 60).toString().padStart(2, '0');
+            timeEl.innerText = `${m}:${s}`;
+        }
+
+        function updateSwDisplay() {
+            let totalSecs = Math.floor(swTime / 1000);
+            let m = Math.floor(totalSecs / 60).toString().padStart(2, '0');
+            let s = (totalSecs % 60).toString().padStart(2, '0');
+            let ms = Math.floor((swTime % 1000) / 10).toString().padStart(2, '0'); // Centiseconds
+            timeEl.innerText = `${m}:${s}.${ms}`;
+        }
+
+        function updateClock() {
+            if(currentMode !== 'clock') return;
+            const now = new Date();
+            timeEl.innerText = now.toLocaleTimeString('en-GB', { hour12: false });
+            dateEl.innerText = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+
+            // Update Dials
+            activeZones.forEach((zone, i) => {
+                let el = document.getElementById(`dial-time-${i}`);
+                if(el) el.innerText = now.toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit', timeZone: zone });
+            });
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock(); // Initial run
+
+        // Trigger Modes from Main Menu
+        document.getElementById('pomoBtn').addEventListener('click', () => setMode('pomo'));
+        document.getElementById('swBtn').addEventListener('click', () => setMode('stopwatch'));
+
+        // --- 4. Fixed Wake Lock & Fullscreen ---
+        document.getElementById('fsBtn').addEventListener('click', () => {
             if (!document.fullscreenElement) document.documentElement.requestFullscreen();
             else document.exitFullscreen();
         });
 
         let wakeLock = null;
+        let isWakeRequested = false;
         const wakeBtn = document.getElementById('wakeBtn');
-        async function requestWakeLock() {
-            try {
-                if ('wakeLock' in navigator) {
-                    wakeLock = await navigator.wakeLock.request('screen');
+
+        async function applyWakeLock() {
+            if ('wakeLock' in navigator && isWakeRequested) {
+                try { 
+                    wakeLock = await navigator.wakeLock.request('screen'); 
                     wakeBtn.innerText = "Stay Awake: ON";
                     wakeBtn.classList.add('active-status');
-                }
-            } catch (err) { wakeBtn.innerText = "Stay Awake: Error"; }
+                } catch (err) { wakeBtn.innerText = "Awake Error"; }
+            }
         }
 
-        wakeBtn.addEventListener('click', async () => {
-            if (wakeLock === null) await requestWakeLock();
+        wakeBtn.addEventListener('click', () => {
+            isWakeRequested = !isWakeRequested;
+            if (isWakeRequested) applyWakeLock();
             else {
-                wakeLock.release();
+                wakeLock?.release();
                 wakeLock = null;
                 wakeBtn.innerText = "Stay Awake: OFF";
                 wakeBtn.classList.remove('active-status');
             }
         });
+
+        // The Fix: Re-acquire wake lock if user switches tabs and comes back
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && isWakeRequested) applyWakeLock();
+        });
+
     </script>
 </body>
 </html>

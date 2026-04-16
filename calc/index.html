@@ -167,7 +167,7 @@
             <div class="tool-result" id="tf-result">Result will appear here...</div>
         </div>
 
-        <div class="disclaimer">V7.5 PRO SUITE | AI VISION ENABLED</div>
+        <div class="disclaimer">V7.5 PRO SUITE | GEMINI VISION ENABLED</div>
     </div>
 
     <div id="ai-output-panel">
@@ -178,9 +178,9 @@
 
     <script>
         // ==========================================
-        // 🔑 YOUR FREE AI API KEY GOES HERE 🔑
+        // 🔑 YOUR FREE GEMINI API KEY GOES HERE 🔑
         // ==========================================
-        const AI_API_KEY = "AQ.Ab8RN6KsTu04qmVuqD2-OlqpPOqxBw0UF1HHw8ZCsfN5hDfC0A"; 
+        const GEMINI_API_KEY = "AQ.Ab8RN6I1WWRb6H1US648-GH27d9VqNei8A-yMq1x3AQuRQ3nKw"; 
         
         // --- UI ROUTING ---
         const panels = ["math-ui", "sketch-zone", "photo-zone", "age-zone", "date-diff-zone", "time-math-zone", "timesheet-zone", "time-format-zone"];
@@ -208,19 +208,18 @@
             } catch (e) { d.value = "ERROR"; } 
         }
 
-        // --- AI TEXT SOLVER ---
+        // --- GEMINI TEXT SOLVER ---
         const aiPanel = document.getElementById('ai-output-panel');
         const aiContent = document.getElementById('ai-content-text');
 
         async function fetchAISolution(problemStr) {
             aiPanel.style.display = 'block';
-            aiContent.innerHTML = '<span class="loading-pulse">AI is analyzing the math...</span>';
+            aiContent.innerHTML = '<span class="loading-pulse">Gemini is analyzing the math...</span>';
             
-            if(!AI_API_KEY) return aiContent.innerHTML = "❌ Add your AI API Key in the code.";
+            
 
             try {
-                // The URL must retain the 'gemini' name to correctly route to Google's API
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${AI_API_KEY}`, {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -235,10 +234,10 @@
                 
                 d.value = "AI SOLVED 👇";
                 aiContent.innerHTML = data.candidates[0].content.parts[0].text.replace(/\n/g, '<br>');
-            } catch (err) { aiContent.innerHTML = "❌ AI Error: " + err.message; }
+            } catch (err) { aiContent.innerHTML = "❌ Gemini Error: " + err.message; }
         }
 
-        // --- AI VISION SOLVER ---
+        // --- GEMINI VISION SOLVER ---
         async function getBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -249,15 +248,15 @@
         }
 
         async function processVisionAI(source) {
-            if(!AI_API_KEY) { alert("AI API Key required for Vision AI"); return; }
+            
             
             const statusBox = source === 'canvas' ? document.getElementById('sketch-status') : document.getElementById('photo-status');
-            statusBox.value = "AI IS LOOKING...";
+            statusBox.value = "GEMINI IS LOOKING...";
             
             try {
                 let base64Image = "";
                 if (source === 'canvas') {
-                    // AI needs the base64 string WITHOUT the "data:image/jpeg;base64," prefix
+                    // Gemini needs the base64 string WITHOUT the "data:image/jpeg;base64," prefix
                     base64Image = document.getElementById('canvas').toDataURL('image/jpeg').split(',')[1];
                 } else {
                     const file = document.getElementById('file-input').files[0];
@@ -266,8 +265,7 @@
                     base64Image = fullBase64.split(',')[1];
                 }
 
-                // The URL must retain the 'gemini' name to correctly route to Google's API
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${AI_API_KEY}`, {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -287,7 +285,7 @@
 
                 if (resultText.includes("CONFUSED")) {
                     statusBox.value = "COULD NOT READ";
-                    alert("AI is confused. Can you draw/photograph it more clearly?");
+                    alert("Gemini is confused. Can you draw/photograph it more clearly?");
                 } else {
                     statusBox.value = "FOUND: " + resultText;
                     document.getElementById('mode-selector').value = 'std';
@@ -379,7 +377,7 @@
         function initCanvas() {
             const zone = document.getElementById('sketch-zone');
             canvas.width = zone.clientWidth; canvas.height = 300;
-            ctx.fillStyle = "white"; // White background works best for AI Vision
+            ctx.fillStyle = "white"; // White background works best for Gemini Vision
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.strokeStyle = 'black'; ctx.lineWidth = 6; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
         }
@@ -404,8 +402,8 @@
             const grid = document.getElementById('button-grid');
             grid.innerHTML = '';
             
-            const stdBtns = ['C', '⌫', '(', ')', '7', '8', '9', '/', '4', '5', '6', '*', '1', '2', '3', '-', '0', '.', '=', '+', '🤖 Ask AI Step-by-Step'];
-            const sciBtns = ['sin', 'cos', 'tan', 'C', '⌫', 'sqrt', '^', '(', ')', '/', 'log', '7', '8', '9', '*', 'pi', '4', '5', '6', '-', 'e', '1', '2', '3', '+', '🤖 Ask AI Step-by-Step', '0', '00', '.', '='];
+            const stdBtns = ['C', '⌫', '(', ')', '7', '8', '9', '/', '4', '5', '6', '*', '1', '2', '3', '-', '0', '.', '=', '+', '🤖 Ask Gemini Step-by-Step'];
+            const sciBtns = ['sin', 'cos', 'tan', 'C', '⌫', 'sqrt', '^', '(', ')', '/', 'log', '7', '8', '9', '*', 'pi', '4', '5', '6', '-', 'e', '1', '2', '3', '+', '🤖 Ask Gemini Step-by-Step', '0', '00', '.', '='];
 
             let activeBtns = (mode === 'std') ? stdBtns : sciBtns;
             grid.style.gridTemplateColumns = (mode === 'std') ? 'repeat(4, 1fr)' : 'repeat(5, 1fr)';
@@ -416,11 +414,11 @@
                 if (['/', '*', '-', '+', '^'].includes(b)) btn.classList.add('op');
                 if (['sin','cos','tan','sqrt','log','pi','e','exp'].includes(b)) btn.classList.add('sci');
                 if (b === '=') btn.classList.add('eq');
-                if (b === '🤖 Ask AI Step-by-Step') btn.classList.add('ai-trigger');
+                if (b === '🤖 Ask Gemini Step-by-Step') btn.classList.add('ai-trigger');
 
                 btn.onclick = () => {
                     if(b === '=') solve();
-                    else if(b === '🤖 Ask AI Step-by-Step') fetchAISolution(d.value);
+                    else if(b === '🤖 Ask Gemini Step-by-Step') fetchAISolution(d.value);
                     else if(b === 'C') { d.value = '0'; closeAIPanel(); }
                     else if(b === '⌫') d.value = d.value.slice(0, -1) || '0';
                     else {

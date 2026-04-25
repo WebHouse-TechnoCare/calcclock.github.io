@@ -7,9 +7,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
     <style>
         :root { --gold: #d4af37; --bg: #050505; --panel: #111; --silver: #e0e0e0; }
-        body { background: var(--bg); color: var(--silver); font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+        body { background: var(--bg); color: var(--silver); font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
         .calc-container { background: var(--panel); padding: 25px; border-radius: 30px; border: 1px solid #222; width: 100%; max-width: 400px; box-shadow: 0 40px 100px rgba(0,0,0,0.9); }
-        .mega-menu { width: 100%; background: #1a1a1a; color: var(--gold); border: 1px solid var(--gold); padding: 12px; border-radius: 12px; margin-bottom: 20px; outline: none; cursor: pointer; }
+        .calci-header { text-align: center; margin-bottom: 16px; }
+        .calci-name { font-size: 1.1rem; font-weight: bold; color: var(--gold); letter-spacing: 2px; }
+        .mega-menu { width: 100%; background: #1a1a1a; color: var(--gold); border: 1px solid var(--gold); padding: 12px; border-radius: 12px; margin-bottom: 20px; cursor: pointer; }
         .display-wrapper { background: #000; border-radius: 15px; margin-bottom: 20px; padding: 15px; min-height: 80px; display: flex; align-items: center; justify-content: flex-end; }
         #display { width: 100%; background: transparent; border: none; color: var(--gold); font-size: 1.8rem; text-align: right; outline: none; }
         .panel-zone { display: none; width: 100%; }
@@ -17,45 +19,38 @@
         .ai-btn { background: linear-gradient(45deg, #111, #222); color: var(--gold); border: 1px solid var(--gold); width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         #button-grid { display: grid; gap: 8px; }
         .calc-btn { background: #1a1a1a; color: #fff; border: none; border-radius: 6px; height: 48px; cursor: pointer; }
-        .ai-trigger { background: var(--gold); color: #000; font-weight: bold; grid-column: span 2; }
         #ai-output-panel { display: none; background: #0a0a0a; border: 1px solid var(--gold); border-radius: 15px; width: 100%; max-width: 400px; margin-top: 20px; padding: 20px; color: #ccc; }
     </style>
 </head>
 <body>
-
     <div class="calc-container">
+        <div class="calci-header"><div class="calci-name">⚡ CALCI AI TUTOR</div></div>
         <select class="mega-menu" id="mode-selector" onchange="switchMode(this.value)">
             <option value="std">Standard Math</option>
             <option value="draw">AI Sketch Solver</option>
             <option value="photo">AI Photo Solver</option>
         </select>
-
         <div id="math-ui" class="panel-zone" style="display: block;">
             <div class="display-wrapper"><input type="text" id="display" readonly value="0"></div>
             <div id="button-grid"></div>
         </div>
-
         <div id="sketch-zone" class="panel-zone">
             <canvas id="canvas"></canvas>
             <button class="ai-btn" onclick="processVisionAI('canvas')">READ & SOLVE</button>
             <button class="ai-btn" style="background:#333;" onclick="clearCanvas()">CLEAR</button>
         </div>
-
         <div id="photo-zone" class="panel-zone">
             <input type="file" id="file-input" accept="image/*" onchange="processVisionAI('file')">
-            <p style="text-align:center; color:#666; font-size:0.8rem;">Upload a clear photo of the math problem.</p>
         </div>
     </div>
-
     <div id="ai-output-panel">
         <h3 style="color:var(--gold); margin-top:0;">🤖 Calci AI Tutor</h3>
         <div id="ai-content-text"></div>
         <button onclick="document.getElementById('ai-output-panel').style.display='none'" style="margin-top:15px; width:100%; cursor:pointer;">Dismiss</button>
     </div>
-
     <script>
         // ==========================================
-        // 🔑 PASTE YOUR NEW GEMINI KEY BELOW 
+        // 🔑 YOUR KEY GOES BELOW
         // ==========================================
         const GEMINI_API_KEY = "AIzaSyDXa3de7UMImD6P6C0C_h0q7wW2GnsIeD4"; 
 
@@ -71,14 +66,13 @@
         }
 
         async function fetchAISolution(problemStr) {
-            aiPanel.style.display = 'block';
-            aiContent.innerHTML = "Thinking...";
+            aiPanel.style.display = 'block'; aiContent.innerHTML = "Calci is thinking...";
             try {
-                // FIXED: Using v1beta and gemini-2.5-flash to avoid 404
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                // UPDATED: Using gemini-3.1-flash (Standard for April 2026)
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash:generateContent?key=${GEMINI_API_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: "Solve this math problem step-by-step: " + problemStr }] }] })
+                    body: JSON.stringify({ contents: [{ parts: [{ text: "Solve step-by-step: " + problemStr }] }] })
                 });
                 const data = await response.json();
                 aiContent.innerHTML = data.candidates[0].content.parts[0].text.replace(/\n/g, '<br>');
@@ -86,8 +80,7 @@
         }
 
         async function processVisionAI(source) {
-            aiPanel.style.display = 'block';
-            aiContent.innerHTML = "Reading Image...";
+            aiPanel.style.display = 'block'; aiContent.innerHTML = "Reading Image...";
             try {
                 let base64Image = "";
                 if (source === 'canvas') {
@@ -100,17 +93,14 @@
                         reader.readAsDataURL(file);
                     });
                 }
-
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash:generateContent?key=${GEMINI_API_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{
-                            parts: [
-                                { text: "Read the math in this image. Solve it step-by-step. If unreadable, say 'CONFUSED'." },
-                                { inline_data: { mime_type: "image/jpeg", data: base64Image } }
-                            ]
-                        }]
+                        contents: [{ parts: [
+                            { text: "Solve the math in this image step-by-step." },
+                            { inline_data: { mime_type: "image/jpeg", data: base64Image } }
+                        ]}]
                     })
                 });
                 const data = await response.json();
@@ -118,26 +108,25 @@
             } catch (err) { aiContent.innerHTML = "Error: " + err.message; }
         }
 
-        // --- Basic Canvas & Button Setup ---
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         function initCanvas() {
             canvas.width = canvas.parentElement.clientWidth; canvas.height = 300;
             ctx.fillStyle = "white"; ctx.fillRect(0,0,canvas.width,canvas.height);
             ctx.strokeStyle = "black"; ctx.lineWidth = 5; ctx.lineCap = "round";
-            canvas.onmousedown = () => canvas.drawing = true;
+            canvas.onmousedown = (e) => { canvas.drawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); };
+            canvas.onmousemove = (e) => { if(canvas.drawing) { ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); } };
             canvas.onmouseup = () => canvas.drawing = false;
-            canvas.onmousemove = (e) => { if(!canvas.drawing) return; const r = canvas.getBoundingClientRect(); ctx.lineTo(e.clientX-r.left, e.clientY-r.top); ctx.stroke(); ctx.beginPath(); ctx.moveTo(e.clientX-r.left, e.clientY-r.top); };
         }
-        function clearCanvas() { ctx.fillRect(0,0,canvas.width,canvas.height); ctx.beginPath(); }
+        function clearCanvas() { ctx.fillRect(0,0,canvas.width,canvas.height); }
 
         function renderButtons() {
             const grid = document.getElementById('button-grid'); grid.innerHTML = '';
             ['7','8','9','/','4','5','6','*','1','2','3','-','0','C','=','+','🤖 Ask Calci'].forEach(b => {
                 const btn = document.createElement('button'); btn.innerText = b; btn.className = 'calc-btn';
-                if(b === '=') btn.onclick = () => { try { d.value = math.evaluate(d.value); } catch(e) { d.value = "Error"; } };
+                if(b === '=') btn.onclick = () => { d.value = math.evaluate(d.value); };
                 else if(b === 'C') btn.onclick = () => d.value = '0';
-                else if(b === '🤖 Ask Calci') { btn.classList.add('ai-trigger'); btn.onclick = () => fetchAISolution(d.value); }
+                else if(b === '🤖 Ask Calci') btn.onclick = () => fetchAISolution(d.value);
                 else btn.onclick = () => d.value = (d.value === '0') ? b : d.value + b;
                 grid.appendChild(btn);
             });

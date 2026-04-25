@@ -1,1224 +1,148 @@
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>CalcClock | AI Maths Tutor</title>
-
-    <link rel="icon" type="image/png" href="/logo1.png">
-
-    
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
-
-    
-
     <style>
-
-        :root { --gold: #d4af37; --bg: #050505; --panel: #111; --silver: #e0e0e0; --accent: #222; }
-
-        body { background: var(--bg); color: var(--silver); font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; overflow-x: hidden; }
-
-        
-
-        .home-btn { position: absolute; top: 20px; left: 20px; z-index: 100; }
-
-        .home-btn img { height: 35px; opacity: 0.5; transition: 0.3s; }
-
-        .home-btn:hover img { opacity: 1; }
-
-
-
-        .calc-container { background: var(--panel); padding: 25px; border-radius: 30px; border: 1px solid #222; width: 100%; max-width: 400px; box-sizing: border-box; box-shadow: 0 40px 100px rgba(0,0,0,0.9); position: relative; z-index: 10; }
-
-        
-
-        /* Calci branding header */
-
-        .calci-header { text-align: center; margin-bottom: 16px; }
-
-        .calci-header .calci-name { font-size: 1.1rem; font-weight: bold; color: var(--gold); letter-spacing: 2px; }
-
-        .calci-header .calci-sub { font-size: 0.65rem; color: #555; letter-spacing: 1px; text-transform: uppercase; }
-
-
-
-        /* Level selector */
-
-        .level-selector { width: 100%; background: #0a0a0a; color: #888; border: 1px solid #2a2a2a; padding: 10px; border-radius: 10px; font-size: 0.8rem; margin-bottom: 12px; outline: none; cursor: pointer; }
-
-        .level-selector option { background: #111; color: var(--silver); }
-
-
-
-        /* MEGA MENU Dropdown */
-
-        .mega-menu { width: 100%; background: #1a1a1a; color: var(--gold); border: 1px solid var(--gold); padding: 12px; border-radius: 12px; font-size: 1rem; font-weight: bold; margin-bottom: 20px; outline: none; cursor: pointer; }
-
-        .mega-menu optgroup { background: #000; color: #fff; font-weight: bold; }
-
-        .mega-menu option { background: #111; color: var(--silver); }
-
-
-
-        /* Display Panel */
-
-        .display-wrapper { background: #000; border-radius: 15px; margin-bottom: 20px; padding: 15px; box-shadow: inset 0 0 20px #000; min-height: 80px; display: flex; flex-direction: column; justify-content: center; }
-
-        #display { width: 100%; background: transparent; border: none; color: var(--gold); font-size: 1.8rem; text-align: right; font-family: 'Courier New', monospace; outline: none; padding: 0; margin: 0; }
-
-
-
-        /* Zones & Panels */
-
-        .panel-zone { display: none; width: 100%; animation: fadeIn 0.3s ease-in-out; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-        
-
-        canvas { background: #fff; border: 1px solid #333; border-radius: 15px; width: 100%; height: 300px; touch-action: none; cursor: crosshair; display: block; }
-
-        .ai-btn { background: linear-gradient(45deg, #111, #222); color: var(--gold); border: 1px solid var(--gold); width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s; margin-top: 10px; }
-
-        .ai-btn:hover { background: var(--gold); color: black; }
-
-        
-
-        .upload-label { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px; background: #0a0a0a; border-radius: 15px; border: 2px dashed #444; color: #666; cursor: pointer; transition: 0.3s; font-weight: bold; letter-spacing: 1px; font-size: 0.8rem; }
-
-        .upload-label:hover { border-color: var(--gold); color: var(--gold); }
-
-        #file-input { display: none; }
-
-        
-
-        /* Math Buttons */
-
+        :root { --gold: #d4af37; --bg: #050505; --panel: #111; --silver: #e0e0e0; }
+        body { background: var(--bg); color: var(--silver); font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+        .calc-container { background: var(--panel); padding: 25px; border-radius: 30px; border: 1px solid #222; width: 100%; max-width: 400px; box-shadow: 0 40px 100px rgba(0,0,0,0.9); }
+        .mega-menu { width: 100%; background: #1a1a1a; color: var(--gold); border: 1px solid var(--gold); padding: 12px; border-radius: 12px; margin-bottom: 20px; outline: none; cursor: pointer; }
+        .display-wrapper { background: #000; border-radius: 15px; margin-bottom: 20px; padding: 15px; min-height: 80px; display: flex; align-items: center; justify-content: flex-end; }
+        #display { width: 100%; background: transparent; border: none; color: var(--gold); font-size: 1.8rem; text-align: right; outline: none; }
+        .panel-zone { display: none; width: 100%; }
+        canvas { background: #fff; border-radius: 15px; width: 100%; height: 300px; touch-action: none; cursor: crosshair; }
+        .ai-btn { background: linear-gradient(45deg, #111, #222); color: var(--gold); border: 1px solid var(--gold); width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         #button-grid { display: grid; gap: 8px; }
-
-        .calc-btn { background: #1a1a1a; color: #fff; border: none; border-radius: 6px; font-size: 1.1rem; cursor: pointer; transition: 0.1s; display: flex; align-items: center; justify-content: center; height: 48px; }
-
-        .calc-btn:active { transform: translateY(2px); }
-
-        .calc-btn.op { color: var(--gold); background: #222; font-size: 1.2rem; }
-
-        .calc-btn.eq { background: var(--gold); color: black; font-weight: bold; font-size: 1.4rem; }
-
-        .calc-btn.sci { font-size: 0.8rem; }
-
-        .calc-btn.ai-trigger { background: linear-gradient(45deg, #d4af37, #9b7e20); color: #000; font-weight: bold; font-size: 0.9rem; grid-column: span 2; }
-
-        
-
-        /* Form Inputs for New Tools */
-
-        .tool-form label { display: block; margin-top: 10px; font-size: 0.8rem; color: #888; text-transform: uppercase; }
-
-        .tool-form input, .tool-form select { width: 100%; padding: 12px; margin-top: 5px; background: #000; border: 1px solid #333; color: var(--gold); border-radius: 8px; box-sizing: border-box; font-family: monospace; font-size: 1rem; }
-
-        .tool-result { margin-top: 15px; padding: 15px; background: #1a1a1a; border-left: 3px solid var(--gold); border-radius: 5px; font-size: 1.1rem; min-height: 20px; word-wrap: break-word; }
-
-
-
-        /* AI Expanding Output Panel */
-
-        #ai-output-panel { display: none; background: #0a0a0a; border: 1px solid var(--gold); border-radius: 15px; width: 100%; max-width: 400px; margin-top: 20px; padding: 20px; box-sizing: border-box; color: #ccc; font-size: 0.9rem; line-height: 1.6; box-shadow: 0 10px 30px rgba(212, 175, 55, 0.1); }
-
-        #ai-output-panel h3 { margin-top: 0; color: var(--gold); font-size: 1rem; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 14px; }
-
-        .loading-pulse { animation: pulse 1.5s infinite; color: var(--gold); font-weight: bold; }
-
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
-
-
-
-        /* Question limit banner */
-
-        .limit-banner { display: none; background: #1a0a00; border: 1px solid #d4af37; border-radius: 10px; padding: 12px 16px; margin-top: 12px; font-size: 0.8rem; color: #d4af37; text-align: center; width: 100%; max-width: 400px; box-sizing: border-box; }
-
-
-
-        .disclaimer { font-size: 0.55rem; color: #444; margin-top: 15px; text-align: center; letter-spacing: 1px; }
-
+        .calc-btn { background: #1a1a1a; color: #fff; border: none; border-radius: 6px; height: 48px; cursor: pointer; }
+        .ai-trigger { background: var(--gold); color: #000; font-weight: bold; grid-column: span 2; }
+        #ai-output-panel { display: none; background: #0a0a0a; border: 1px solid var(--gold); border-radius: 15px; width: 100%; max-width: 400px; margin-top: 20px; padding: 20px; color: #ccc; }
     </style>
-
 </head>
-
 <body>
 
-
-
-    <a href="/" class="home-btn"><img src="/logo1.png" alt="Home" onerror="this.style.display='none'"></a>
-
-
-
     <div class="calc-container">
-
-
-
-        <div class="calci-header">
-
-            <div class="calci-name">⚡ CALCI</div>
-
-            <div class="calci-sub">Your AI Maths Tutor — by CalcClock</div>
-
-        </div>
-
-
-
-        <select class="level-selector" id="level-selector">
-
-            <option value="primary">🟢 Primary School</option>
-
-            <option value="middle">🔵 Middle School</option>
-
-            <option value="high" selected>🟠 High School</option>
-
-            <option value="university">🔴 University</option>
-
-            <option value="adult">⚫ Professional / Adult</option>
-
-        </select>
-
-        
-
         <select class="mega-menu" id="mode-selector" onchange="switchMode(this.value)">
-
-            <optgroup label="🧮 MATH & AI">
-
-                <option value="std">Standard Math</option>
-
-                <option value="sci">Scientific Math</option>
-
-                <option value="draw">AI Sketch Solver</option>
-
-                <option value="photo">AI Photo Solver</option>
-
-            </optgroup>
-
-            <optgroup label="📅 DATE TOOLS">
-
-                <option value="age">Age Calculator</option>
-
-                <option value="date-diff">Date Difference</option>
-
-            </optgroup>
-
-            <optgroup label="⏳ TIME TOOLS">
-
-                <option value="time-math">Add/Subtract Time</option>
-
-            </optgroup>
-
-            <optgroup label="💼 WORK TOOLS">
-
-                <option value="timesheet">Shift / Timesheet</option>
-
-            </optgroup>
-
-            <optgroup label="🔄 CONVERTERS">
-
-                <option value="time-format">12h ↔ 24h Converter</option>
-
-            </optgroup>
-
+            <option value="std">Standard Math</option>
+            <option value="draw">AI Sketch Solver</option>
+            <option value="photo">AI Photo Solver</option>
         </select>
-
-
 
         <div id="math-ui" class="panel-zone" style="display: block;">
-
             <div class="display-wrapper"><input type="text" id="display" readonly value="0"></div>
-
             <div id="button-grid"></div>
-
         </div>
-
-
 
         <div id="sketch-zone" class="panel-zone">
-
-            <div class="display-wrapper" style="min-height:40px;"><input type="text" id="sketch-status" readonly value="Draw your maths problem below"></div>
-
             <canvas id="canvas"></canvas>
-
-            <div style="display:flex; gap:10px;">
-
-                <button style="flex:1; background:#222; color:#666; border:none; border-radius:8px; cursor:pointer;" onclick="clearCanvas()">CLEAR</button>
-
-                <button class="ai-btn" style="flex:3; margin-top:0;" onclick="processVisionAI('canvas')">READ & SOLVE</button>
-
-            </div>
-
+            <button class="ai-btn" onclick="processVisionAI('canvas')">READ & SOLVE</button>
+            <button class="ai-btn" style="background:#333;" onclick="clearCanvas()">CLEAR</button>
         </div>
-
-
 
         <div id="photo-zone" class="panel-zone">
-
-            <div class="display-wrapper" style="min-height:40px;"><input type="text" id="photo-status" readonly value="Upload your maths problem"></div>
-
-            <label for="file-input" class="upload-label"> 
-
-                <span>📷 SNAP PROBLEM</span>
-
-                <span style="font-size: 0.6rem; margin-top: 10px; font-weight: normal; color:#444;">Handwriting or Printed</span>
-
-            </label>
-
             <input type="file" id="file-input" accept="image/*" onchange="processVisionAI('file')">
-
+            <p style="text-align:center; color:#666; font-size:0.8rem;">Upload a clear photo of the math problem.</p>
         </div>
-
-
-
-        <div id="age-zone" class="panel-zone tool-form">
-
-            <label>Date of Birth</label>
-
-            <input type="date" id="age-dob">
-
-            <button class="ai-btn" onclick="calcAge()">Calculate Age</button>
-
-            <div class="tool-result" id="age-result">Result will appear here...</div>
-
-        </div>
-
-
-
-        <div id="date-diff-zone" class="panel-zone tool-form">
-
-            <label>Start Date</label>
-
-            <input type="date" id="dd-start">
-
-            <label>End Date</label>
-
-            <input type="date" id="dd-end">
-
-            <button class="ai-btn" onclick="calcDateDiff()">Calculate Difference</button>
-
-            <div class="tool-result" id="dd-result">Result will appear here...</div>
-
-        </div>
-
-
-
-        <div id="time-math-zone" class="panel-zone tool-form">
-
-            <label>Base Time</label>
-
-            <input type="time" id="tm-base">
-
-            <div style="display:flex; gap:10px;">
-
-                <div style="flex:1;">
-
-                    <label>Action</label>
-
-                    <select id="tm-action"><option value="add">Add</option><option value="sub">Subtract</option></select>
-
-                </div>
-
-                <div style="flex:1;">
-
-                    <label>Hours</label>
-
-                    <input type="number" id="tm-hours" value="0" min="0">
-
-                </div>
-
-                <div style="flex:1;">
-
-                    <label>Mins</label>
-
-                    <input type="number" id="tm-mins" value="0" min="0">
-
-                </div>
-
-            </div>
-
-            <button class="ai-btn" onclick="calcTimeMath()">Calculate New Time</button>
-
-            <div class="tool-result" id="tm-result">Result will appear here...</div>
-
-        </div>
-
-
-
-        <div id="timesheet-zone" class="panel-zone tool-form">
-
-            <label>Clock In</label>
-
-            <input type="time" id="ts-in">
-
-            <label>Clock Out</label>
-
-            <input type="time" id="ts-out">
-
-            <label>Unpaid Break (Minutes)</label>
-
-            <input type="number" id="ts-break" value="30" min="0">
-
-            <button class="ai-btn" onclick="calcTimesheet()">Calculate Shift</button>
-
-            <div class="tool-result" id="ts-result">Result will appear here...</div>
-
-        </div>
-
-
-
-        <div id="time-format-zone" class="panel-zone tool-form">
-
-            <label>Enter 24h Time (e.g., 14:30)</label>
-
-            <input type="time" id="tf-input">
-
-            <button class="ai-btn" onclick="calcTimeFormat()">Convert</button>
-
-            <div class="tool-result" id="tf-result">Result will appear here...</div>
-
-        </div>
-
-
-
-        <div class="disclaimer">V8.0 | CALCI AI TUTOR ENGINE | CALCCLOCK.COM</div>
-
     </div>
-
-
 
     <div id="ai-output-panel">
-
-        <h3>⚡ Calci — Your AI Maths Tutor</h3>
-
+        <h3 style="color:var(--gold); margin-top:0;">🤖 Calci AI Tutor</h3>
         <div id="ai-content-text"></div>
-
-        <button onclick="closeAIPanel()" style="margin-top:15px; width:100%; background:#222; color:#ccc; border:none; padding:10px; border-radius:8px; cursor:pointer;">Dismiss</button>
-
+        <button onclick="document.getElementById('ai-output-panel').style.display='none'" style="margin-top:15px; width:100%; cursor:pointer;">Dismiss</button>
     </div>
-
-
-
-    <div class="limit-banner" id="limit-banner">
-
-        🔥 You've used today's free questions! Come back in <span id="countdown">3:00:00</span> or <a href="/pricing" style="color:var(--gold);">upgrade to Premium</a> for unlimited solving.
-
-    </div>
-
-
 
     <script>
-
         // ==========================================
-
-        // 🔑 CALCI API ENGINE
-
+        // 🔑 PASTE YOUR NEW GEMINI KEY BELOW 
         // ==========================================
-
-        // IMPORTANT: Put your newly generated API key here. NEVER share it publicly!
-
-        const GEMINI_API_KEY = "AIzaSyDXa3de7UMImD6P6C0C_h0q7wW2GnsIeD4";
-
-
-
-        // ==========================================
-
-        // 🔢 QUESTION LIMIT SYSTEM (Fixed Timer Bug)
-
-        // ==========================================
-
-        const FREE_LIMIT = 5;
-
-        const DOWNGRADE_LIMIT = 3; 
-
-
-
-        function getTodayKey() {
-
-            return 'calci_questions_' + new Date().toDateString();
-
-        }
-
-        
-
-        function getBlockTimeKey() {
-
-            return getTodayKey() + '_blockedTime';
-
-        }
-
-
-
-        function getQuestionCount() {
-
-            return parseInt(localStorage.getItem(getTodayKey()) || '0');
-
-        }
-
-
-
-        function incrementQuestionCount() {
-
-            const count = getQuestionCount() + 1;
-
-            localStorage.setItem(getTodayKey(), count);
-
-            return count;
-
-        }
-
-
-
-        function checkLimit() {
-
-            // If already blocked, show banner and calculate remaining time
-
-            if (localStorage.getItem(getBlockTimeKey())) {
-
-                showLimitBanner();
-
-                return 'blocked';
-
-            }
-
-
-
-            const count = getQuestionCount();
-
-            if (count >= FREE_LIMIT + DOWNGRADE_LIMIT) {
-
-                // Set the exact time they were blocked so it survives page reloads
-
-                localStorage.setItem(getBlockTimeKey(), Date.now());
-
-                showLimitBanner();
-
-                return 'blocked';
-
-            }
-
-            if (count >= FREE_LIMIT) return 'downgraded';
-
-            return 'full';
-
-        }
-
-
-
-        let countdownInterval; // Keep track of interval so we don't start multiple
-
-
-
-        function showLimitBanner() {
-
-            const banner = document.getElementById('limit-banner');
-
-            banner.style.display = 'block';
-
-            startCountdown();
-
-        }
-
-
-
-        function startCountdown() {
-
-            if (countdownInterval) clearInterval(countdownInterval);
-
-            
-
-            const blockTime = parseInt(localStorage.getItem(getBlockTimeKey()) || Date.now());
-
-            const el = document.getElementById('countdown');
-
-            
-
-            countdownInterval = setInterval(() => {
-
-                const now = Date.now();
-
-                const elapsedSeconds = Math.floor((now - blockTime) / 1000);
-
-                let secondsRemaining = (3 * 60 * 60) - elapsedSeconds;
-
-
-
-                if (secondsRemaining <= 0) { 
-
-                    clearInterval(countdownInterval); 
-
-                    document.getElementById('limit-banner').style.display = 'none'; 
-
-                    // Reset everything so they can ask questions again
-
-                    localStorage.removeItem(getBlockTimeKey());
-
-                    localStorage.setItem(getTodayKey(), '0');
-
-                    return; 
-
-                }
-
-                
-
-                const h = Math.floor(secondsRemaining / 3600).toString().padStart(2,'0');
-
-                const m = Math.floor((secondsRemaining % 3600) / 60).toString().padStart(2,'0');
-
-                const s = (secondsRemaining % 60).toString().padStart(2,'0');
-
-                el.textContent = `${h}:${m}:${s}`;
-
-            }, 1000);
-
-        }
-
-
-
-        // Run once on load just in case they are already blocked
-
-        if (localStorage.getItem(getBlockTimeKey())) {
-
-            showLimitBanner();
-
-        }
-
-
-
-        // ==========================================
-
-        // 🎓 LEVEL-BASED TUTOR PROMPT
-
-        // ==========================================
-
-        function getLevelPrompt() {
-
-            const level = document.getElementById('level-selector').value;
-
-            const prompts = {
-
-                primary: "You are Calci, a friendly and encouraging AI maths tutor for primary school children aged 5-11. Use very simple words, short sentences, and fun examples like sweets, toys or animals. Always be warm and encouraging. Never use complicated terms.",
-
-                middle: "You are Calci, a helpful AI maths tutor for middle school students aged 11-14. Use clear, simple explanations with relatable everyday examples. Be encouraging and patient. Explain each step clearly.",
-
-                high: "You are Calci, an AI maths tutor for high school students. Explain step by step with proper mathematical terminology. Use real-world examples. At the end, include a brief textbook reference to validate the method used.",
-
-                university: "You are Calci, an advanced AI maths tutor for university students. Provide rigorous step-by-step solutions with full mathematical notation. Include theorem references, proofs where relevant, and academic citations.",
-
-                adult: "You are Calci, a professional AI maths assistant. Provide clear, efficient step-by-step solutions with practical real-world context. Include formula references and professional applications."
-
-            };
-
-            return prompts[level] || prompts.high;
-
-        }
-
-
-
-        // ==========================================
-
-        // 🤖 CALCI TEXT SOLVER
-
-        // ==========================================
-
-        const aiPanel = document.getElementById('ai-output-panel');
-
-        const aiContent = document.getElementById('ai-content-text');
-
-
-
-        async function fetchAISolution(problemStr) {
-
-            if(GEMINI_API_KEY === "YOUR_GEMINI_API_KEY_HERE") {
-
-                aiPanel.style.display = 'block';
-
-                aiContent.innerHTML = "❌ Add your Gemini API Key in the code.";
-
-                return;
-
-            }
-
-
-
-            const status = checkLimit();
-
-            if (status === 'blocked') {
-
-                return; // Banner is handled by checkLimit
-
-            }
-
-
-
-            const count = incrementQuestionCount();
-
-            aiPanel.style.display = 'block';
-
-
-
-            if (status === 'downgraded') {
-
-                aiContent.innerHTML = '<span style="color:#888; font-size:0.8rem;">⚠️ You are on limited mode. <a href="/pricing" style="color:var(--gold);">Upgrade for full answers.</a></span><br><br><span class="loading-pulse">Calci is thinking...</span>';
-
-            } else {
-
-                aiContent.innerHTML = '<span class="loading-pulse">⚡ Calci is solving your problem...</span>';
-
-            }
-
-
-
-            const levelPrompt = getLevelPrompt();
-
-            const fullPrompt = status === 'downgraded'
-
-                ? `${levelPrompt} Give a very brief summary answer only (no step by step). Problem: ${problemStr}`
-
-                : `${levelPrompt} Solve the following problem step by step. Format clearly with numbered steps. End with a short reference or formula name. Problem: ${problemStr}`;
-
-
-
-            try {
-
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-
-                    method: 'POST',
-
-                    headers: { 'Content-Type': 'application/json' },
-
-                    body: JSON.stringify({
-
-                        contents: [{ parts: [{ text: fullPrompt }] }]
-
-                    })
-
-                });
-
-                
-
-                const data = await response.json();
-
-                if (data.error) throw new Error(data.error.message);
-
-                
-
-                document.getElementById('display').value = "✅ Solved by Calci";
-
-                let answer = data.candidates[0].content.parts[0].text.replace(/\n/g, '<br>');
-
-                
-
-                if (status === 'downgraded') {
-
-                    answer += '<br><br><span style="color:#888; font-size:0.75rem;">⚠️ Limited answer. <a href="/pricing" style="color:var(--gold);">Upgrade for full step-by-step.</a></span>';
-
-                }
-
-
-
-                aiContent.innerHTML = answer;
-
-
-
-            } catch (err) {
-
-                aiContent.innerHTML = "❌ Calci Error: " + err.message + "<br><small>Please check your internet connection and try again.</small>";
-
-            }
-
-        }
-
-
-
-        // ==========================================
-
-        // 📷 CALCI VISION SOLVER (Canvas & Photo)
-
-        // ==========================================
-
-        async function getBase64(file) {
-
-            return new Promise((resolve, reject) => {
-
-                const reader = new FileReader();
-
-                reader.readAsDataURL(file);
-
-                reader.onload = () => resolve(reader.result);
-
-                reader.onerror = error => reject(error);
-
-            });
-
-        }
-
-
-
-        async function processVisionAI(source) {
-
-            if(GEMINI_API_KEY === "YOUR_GEMINI_API_KEY_HERE") { alert("API Key Required"); return; }
-
-
-
-            const status = checkLimit();
-
-            if (status === 'blocked') { return; } // Banner handled inside checkLimit
-
-
-
-            const statusBox = source === 'canvas' ? document.getElementById('sketch-status') : document.getElementById('photo-status');
-
-            statusBox.value = "⚡ Calci is reading your problem...";
-
-            
-
-            try {
-
-                let base64Image = "";
-
-                if (source === 'canvas') {
-
-                    base64Image = document.getElementById('canvas').toDataURL('image/jpeg').split(',')[1];
-
-                } else {
-
-                    const file = document.getElementById('file-input').files[0];
-
-                    if (!file) return;
-
-                    const fullBase64 = await getBase64(file);
-
-                    base64Image = fullBase64.split(',')[1];
-
-                }
-
-
-
-                const levelPrompt = getLevelPrompt();
-
-                incrementQuestionCount();
-
-
-
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-
-                    method: 'POST',
-
-                    headers: { 'Content-Type': 'application/json' },
-
-                    body: JSON.stringify({
-
-                        contents: [{
-
-                            parts: [
-
-                                { text: `${levelPrompt} Read the maths problem in this image carefully. Solve it step by step with numbered steps. End with a reference or formula name. If the image is unreadable, return exactly the word CONFUSED.` },
-
-                                { inline_data: { mime_type: "image/jpeg", data: base64Image } }
-
-                            ]
-
-                        }]
-
-                    })
-
-                });
-
-
-
-                const data = await response.json();
-
-                if (data.error) throw new Error(data.error.message);
-
-                
-
-                let resultText = data.candidates[0].content.parts[0].text.trim();
-
-
-
-                if (resultText.includes("CONFUSED")) {
-
-                    statusBox.value = "Could not read — please try again";
-
-                    alert("Calci couldn't read that clearly. Try drawing bigger or taking a clearer photo.");
-
-                } else {
-
-                    statusBox.value = "✅ Calci solved it!";
-
-                    aiPanel.style.display = 'block';
-
-                    document.getElementById('ai-output-panel').querySelector('h3').textContent = '⚡ Calci — Your AI Maths Tutor';
-
-                    aiContent.innerHTML = resultText.replace(/\n/g, '<br>');
-
-                }
-
-            } catch (err) { 
-
-                console.error(err);
-
-                statusBox.value = "❌ Error — please try again";
-
-            }
-
-        }
-
-
-
-        function closeAIPanel() { aiPanel.style.display = 'none'; }
-
-
-
-        // ==========================================
-
-        // UI ROUTING
-
-        // ==========================================
-
-        const panels = ["math-ui", "sketch-zone", "photo-zone", "age-zone", "date-diff-zone", "time-math-zone", "timesheet-zone", "time-format-zone"];
+        const GEMINI_API_KEY = "AIzaSyDXa3de7UMImD6P6C0C_h0q7wW2GnsIeD4"; 
 
         const d = document.getElementById('display');
-
-
+        const aiPanel = document.getElementById('ai-output-panel');
+        const aiContent = document.getElementById('ai-content-text');
 
         function switchMode(mode) {
-
-            panels.forEach(p => document.getElementById(p).style.display = 'none');
-
-            closeAIPanel();
-
-            if (mode === 'std' || mode === 'sci') {
-
-                document.getElementById('math-ui').style.display = 'block';
-
-                renderButtons(mode);
-
-            } else if (mode === 'draw') {
-
-                document.getElementById('sketch-zone').style.display = 'block';
-
-                setTimeout(initCanvas, 100);
-
-            } else if (mode === 'photo') {
-
-                document.getElementById('photo-zone').style.display = 'block';
-
-            } else {
-
-                document.getElementById(mode + '-zone').style.display = 'block';
-
-            }
-
+            ["math-ui", "sketch-zone", "photo-zone"].forEach(p => document.getElementById(p).style.display = 'none');
+            if(mode === 'draw') { document.getElementById('sketch-zone').style.display = 'block'; initCanvas(); }
+            else if(mode === 'photo') { document.getElementById('photo-zone').style.display = 'block'; }
+            else { document.getElementById('math-ui').style.display = 'block'; renderButtons(); }
         }
 
-
-
-        // ==========================================
-
-        // CORE MATH
-
-        // ==========================================
-
-        function solve() { 
-
-            try { 
-
-                let exp = d.value.replace(/×/g, '*').replace(/÷/g, '/');
-
-                let res = math.evaluate(exp); 
-
-                d.value = math.format(res, {precision: 10}); 
-
-            } catch (e) { d.value = "ERROR"; } 
-
+        async function fetchAISolution(problemStr) {
+            aiPanel.style.display = 'block';
+            aiContent.innerHTML = "Thinking...";
+            try {
+                // FIXED: Using v1beta and gemini-2.5-flash to avoid 404
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: "Solve this math problem step-by-step: " + problemStr }] }] })
+                });
+                const data = await response.json();
+                aiContent.innerHTML = data.candidates[0].content.parts[0].text.replace(/\n/g, '<br>');
+            } catch (err) { aiContent.innerHTML = "Error: " + err.message; }
         }
 
+        async function processVisionAI(source) {
+            aiPanel.style.display = 'block';
+            aiContent.innerHTML = "Reading Image...";
+            try {
+                let base64Image = "";
+                if (source === 'canvas') {
+                    base64Image = document.getElementById('canvas').toDataURL('image/jpeg').split(',')[1];
+                } else {
+                    const file = document.getElementById('file-input').files[0];
+                    const reader = new FileReader();
+                    base64Image = await new Promise(res => {
+                        reader.onload = () => res(reader.result.split(',')[1]);
+                        reader.readAsDataURL(file);
+                    });
+                }
 
-
-        // ==========================================
-
-        // TOOL CALCULATORS
-
-        // ==========================================
-
-        function calcAge() {
-
-            const dob = new Date(document.getElementById('age-dob').value);
-
-            if (isNaN(dob)) return document.getElementById('age-result').innerText = "Please enter a valid date.";
-
-            const diff = Date.now() - dob.getTime();
-
-            const ageDate = new Date(diff); 
-
-            document.getElementById('age-result').innerText = `You are ${Math.abs(ageDate.getUTCFullYear() - 1970)} years old.`;
-
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                { text: "Read the math in this image. Solve it step-by-step. If unreadable, say 'CONFUSED'." },
+                                { inline_data: { mime_type: "image/jpeg", data: base64Image } }
+                            ]
+                        }]
+                    })
+                });
+                const data = await response.json();
+                aiContent.innerHTML = data.candidates[0].content.parts[0].text.replace(/\n/g, '<br>');
+            } catch (err) { aiContent.innerHTML = "Error: " + err.message; }
         }
 
-
-
-        function calcDateDiff() {
-
-            const d1 = new Date(document.getElementById('dd-start').value);
-
-            const d2 = new Date(document.getElementById('dd-end').value);
-
-            if (isNaN(d1) || isNaN(d2)) return document.getElementById('dd-result').innerText = "Select both dates.";
-
-            const diffTime = Math.abs(d2 - d1);
-
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-
-            document.getElementById('dd-result').innerText = `Difference: ${diffDays} Days`;
-
-        }
-
-
-
-        function calcTimeMath() {
-
-            const base = document.getElementById('tm-base').value;
-
-            if (!base) return document.getElementById('tm-result').innerText = "Select base time.";
-
-            let [h, m] = base.split(':').map(Number);
-
-            const action = document.getElementById('tm-action').value;
-
-            const hMod = parseInt(document.getElementById('tm-hours').value) || 0;
-
-            const mMod = parseInt(document.getElementById('tm-mins').value) || 0;
-
-            let totalMins = (h * 60) + m;
-
-            let modMins = (hMod * 60) + mMod;
-
-            if (action === 'add') totalMins += modMins;
-
-            else totalMins -= modMins;
-
-            totalMins = ((totalMins % 1440) + 1440) % 1440; 
-
-            let finalH = Math.floor(totalMins / 60).toString().padStart(2, '0');
-
-            let finalM = (totalMins % 60).toString().padStart(2, '0');
-
-            document.getElementById('tm-result').innerText = `New Time: ${finalH}:${finalM}`;
-
-        }
-
-
-
-        function calcTimesheet() {
-
-            const t1 = document.getElementById('ts-in').value;
-
-            const t2 = document.getElementById('ts-out').value;
-
-            if (!t1 || !t2) return document.getElementById('ts-result').innerText = "Enter in/out times.";
-
-            let [h1, m1] = t1.split(':').map(Number);
-
-            let [h2, m2] = t2.split(':').map(Number);
-
-            let breakMins = parseInt(document.getElementById('ts-break').value) || 0;
-
-            let d1 = new Date(2000, 0, 1, h1, m1);
-
-            let d2 = new Date(2000, 0, h2 < h1 ? 2 : 1, h2, m2); 
-
-            let diffMs = d2 - d1;
-
-            let totalMins = (diffMs / 60000) - breakMins;
-
-            if (totalMins < 0) totalMins = 0;
-
-            let workedH = Math.floor(totalMins / 60);
-
-            let workedM = totalMins % 60;
-
-            document.getElementById('ts-result').innerText = `Total Worked: ${workedH}h ${workedM}m`;
-
-        }
-
-
-
-        function calcTimeFormat() {
-
-            let time = document.getElementById('tf-input').value;
-
-            if (!time) return;
-
-            let [h, m] = time.split(':');
-
-            let period = +h < 12 ? 'AM' : 'PM';
-
-            let h12 = +h % 12 || 12;
-
-            document.getElementById('tf-result').innerText = `12-Hour Format: ${h12}:${m} ${period}`;
-
-        }
-
-
-
-        // ==========================================
-
-        // CANVAS DRAWING
-
-        // ==========================================
-
+        // --- Basic Canvas & Button Setup ---
         const canvas = document.getElementById('canvas');
-
         const ctx = canvas.getContext('2d');
-
-        let drawing = false;
-
-
-
         function initCanvas() {
-
-            const zone = document.getElementById('sketch-zone');
-
-            canvas.width = zone.clientWidth; canvas.height = 300;
-
-            ctx.fillStyle = "white";
-
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.strokeStyle = 'black'; ctx.lineWidth = 6; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-
+            canvas.width = canvas.parentElement.clientWidth; canvas.height = 300;
+            ctx.fillStyle = "white"; ctx.fillRect(0,0,canvas.width,canvas.height);
+            ctx.strokeStyle = "black"; ctx.lineWidth = 5; ctx.lineCap = "round";
+            canvas.onmousedown = () => canvas.drawing = true;
+            canvas.onmouseup = () => canvas.drawing = false;
+            canvas.onmousemove = (e) => { if(!canvas.drawing) return; const r = canvas.getBoundingClientRect(); ctx.lineTo(e.clientX-r.left, e.clientY-r.top); ctx.stroke(); ctx.beginPath(); ctx.moveTo(e.clientX-r.left, e.clientY-r.top); };
         }
+        function clearCanvas() { ctx.fillRect(0,0,canvas.width,canvas.height); ctx.beginPath(); }
 
-
-
-        function getPos(e) {
-
-            const rect = canvas.getBoundingClientRect();
-
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-            return { x: clientX - rect.left, y: clientY - rect.top };
-
-        }
-
-
-
-        canvas.addEventListener('mousedown', (e) => { drawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
-
-        canvas.addEventListener('mousemove', (e) => { if (!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
-
-        canvas.addEventListener('mouseup', () => drawing = false);
-
-        canvas.addEventListener('touchstart', (e) => { drawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); }, {passive: false});
-
-        canvas.addEventListener('touchmove', (e) => { if (!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); }, {passive: false});
-
-        canvas.addEventListener('touchend', () => drawing = false);
-
-
-
-        function clearCanvas() { 
-
-            ctx.fillStyle = "white"; 
-
-            ctx.fillRect(0, 0, canvas.width, canvas.height); 
-
-            document.getElementById('sketch-status').value = "Draw your maths problem below"; 
-
-            document.getElementById('display').value = "0"; // Bug Fix: Clearing canvas resets display
-
-        }
-
-
-
-        // ==========================================
-
-        // BUTTON GRIDS
-
-        // ==========================================
-
-        function renderButtons(mode) {
-
-            const grid = document.getElementById('button-grid');
-
-            grid.innerHTML = '';
-
-            
-
-            const stdBtns = ['C', '⌫', '(', ')', '7', '8', '9', '/', '4', '5', '6', '*', '1', '2', '3', '-', '0', '.', '=', '+', '⚡ Ask Calci — Step by Step'];
-
-            const sciBtns = ['sin', 'cos', 'tan', 'C', '⌫', 'sqrt', '^', '(', ')', '/', 'log', '7', '8', '9', '*', 'pi', '4', '5', '6', '-', 'e', '1', '2', '3', '+', '⚡ Ask Calci — Step by Step', '0', '00', '.', '='];
-
-
-
-            let activeBtns = (mode === 'std') ? stdBtns : sciBtns;
-
-            grid.style.gridTemplateColumns = (mode === 'std') ? 'repeat(4, 1fr)' : 'repeat(5, 1fr)';
-
-            
-
-            activeBtns.forEach(b => {
-
-                const btn = document.createElement('button');
-
-                btn.innerText = b; btn.className = 'calc-btn';
-
-                if (['/', '*', '-', '+', '^'].includes(b)) btn.classList.add('op');
-
-                if (['sin','cos','tan','sqrt','log','pi','e','exp'].includes(b)) btn.classList.add('sci');
-
-                if (b === '=') btn.classList.add('eq');
-
-                if (b === '⚡ Ask Calci — Step by Step') btn.classList.add('ai-trigger');
-
-
-
-                btn.onclick = () => {
-
-                    if (b === '=') solve();
-
-                    else if (b === '⚡ Ask Calci — Step by Step') fetchAISolution(d.value);
-
-                    else if (b === 'C') { d.value = '0'; closeAIPanel(); }
-
-                    else if (b === '⌫') d.value = d.value.slice(0, -1) || '0';
-
-                    else {
-
-                        let append = b;
-
-                        if (['sin','cos','tan','sqrt','log'].includes(b)) append = b + '(';
-
-                        d.value = (d.value === '0') ? append : d.value + append;
-
-                    }
-
-                };
-
+        function renderButtons() {
+            const grid = document.getElementById('button-grid'); grid.innerHTML = '';
+            ['7','8','9','/','4','5','6','*','1','2','3','-','0','C','=','+','🤖 Ask Calci'].forEach(b => {
+                const btn = document.createElement('button'); btn.innerText = b; btn.className = 'calc-btn';
+                if(b === '=') btn.onclick = () => { try { d.value = math.evaluate(d.value); } catch(e) { d.value = "Error"; } };
+                else if(b === 'C') btn.onclick = () => d.value = '0';
+                else if(b === '🤖 Ask Calci') { btn.classList.add('ai-trigger'); btn.onclick = () => fetchAISolution(d.value); }
+                else btn.onclick = () => d.value = (d.value === '0') ? b : d.value + b;
                 grid.appendChild(btn);
-
             });
-
         }
-
-        
-
-        switchMode('std');
-
+        renderButtons();
     </script>
-
 </body>
-
 </html>
-

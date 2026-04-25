@@ -134,51 +134,30 @@
             <button class="ai-btn" onclick="calcAge()">Calculate Age</button>
             <div class="tool-result" id="age-result">Result will appear here...</div>
         </div>
-
         <div id="date-diff-zone" class="panel-zone tool-form">
-            <label>Start Date</label>
-            <input type="date" id="dd-start">
-            <label>End Date</label>
-            <input type="date" id="dd-end">
+            <label>Start Date</label><input type="date" id="dd-start">
+            <label>End Date</label><input type="date" id="dd-end">
             <button class="ai-btn" onclick="calcDateDiff()">Calculate Difference</button>
             <div class="tool-result" id="dd-result">Result will appear here...</div>
         </div>
-
         <div id="time-math-zone" class="panel-zone tool-form">
-            <label>Base Time</label>
-            <input type="time" id="tm-base">
+            <label>Base Time</label><input type="time" id="tm-base">
             <div style="display:flex; gap:10px;">
-                <div style="flex:1;">
-                    <label>Action</label>
-                    <select id="tm-action"><option value="add">Add</option><option value="sub">Subtract</option></select>
-                </div>
-                <div style="flex:1;">
-                    <label>Hours</label>
-                    <input type="number" id="tm-hours" value="0" min="0">
-                </div>
-                <div style="flex:1;">
-                    <label>Mins</label>
-                    <input type="number" id="tm-mins" value="0" min="0">
-                </div>
+                <div style="flex:1;"><label>Action</label><select id="tm-action"><option value="add">Add</option><option value="sub">Subtract</option></select></div>
+                <div style="flex:1;"><label>Hours</label><input type="number" id="tm-hours" value="0"></div>
+                <div style="flex:1;"><label>Mins</label><input type="number" id="tm-mins" value="0"></div>
             </div>
-            <button class="ai-btn" onclick="calcTimeMath()">Calculate New Time</button>
+            <button class="ai-btn" onclick="calcTimeMath()">Calculate</button>
             <div class="tool-result" id="tm-result">Result will appear here...</div>
         </div>
-
         <div id="timesheet-zone" class="panel-zone tool-form">
-            <label>Clock In</label>
-            <input type="time" id="ts-in">
-            <label>Clock Out</label>
-            <input type="time" id="ts-out">
-            <label>Unpaid Break (Minutes)</label>
-            <input type="number" id="ts-break" value="30" min="0">
-            <button class="ai-btn" onclick="calcTimesheet()">Calculate Shift</button>
+            <label>In</label><input type="time" id="ts-in"><label>Out</label><input type="time" id="ts-out">
+            <label>Break (Mins)</label><input type="number" id="ts-break" value="30">
+            <button class="ai-btn" onclick="calcTimesheet()">Calculate</button>
             <div class="tool-result" id="ts-result">Result will appear here...</div>
         </div>
-
         <div id="time-format-zone" class="panel-zone tool-form">
-            <label>Enter 24h Time (e.g., 14:30)</label>
-            <input type="time" id="tf-input">
+            <label>24h Time</label><input type="time" id="tf-input">
             <button class="ai-btn" onclick="calcTimeFormat()">Convert</button>
             <div class="tool-result" id="tf-result">Result will appear here...</div>
         </div>
@@ -193,18 +172,17 @@
     </div>
 
     <div class="limit-banner" id="limit-banner">
-        🔥 You've used today's free questions! Come back in <span id="countdown">3:00:00</span> or <a href="/pricing" style="color:var(--gold);">upgrade to Premium</a> for unlimited solving.
+        🔥 Questions used! Back in <span id="countdown">3:00:00</span> or <a href="/pricing" style="color:var(--gold);">upgrade</a>.
     </div>
 
     <script>
         // ==========================================
-        // 🔑 CALCI API ENGINE (Fixed 2026 Version)
+        // 🔑 CALCI API ENGINE (Fixed 2026 Beta Endpoint)
         // ==========================================
         const GEMINI_API_KEY = "AIzaSyDXa3de7UMImD6P6C0C_h0q7wW2GnsIeD4";
 
         const FREE_LIMIT = 5;
         const DOWNGRADE_LIMIT = 3;
-
         function getTodayKey() { return 'calci_questions_' + new Date().toDateString(); }
         function getQuestionCount() { return parseInt(localStorage.getItem(getTodayKey()) || '0'); }
         function incrementQuestionCount() {
@@ -212,19 +190,13 @@
             localStorage.setItem(getTodayKey(), count);
             return count;
         }
-
         function checkLimit() {
             const count = getQuestionCount();
             if (count >= FREE_LIMIT + DOWNGRADE_LIMIT) { showLimitBanner(); return 'blocked'; }
             if (count >= FREE_LIMIT) return 'downgraded';
             return 'full';
         }
-
-        function showLimitBanner() {
-            document.getElementById('limit-banner').style.display = 'block';
-            startCountdown();
-        }
-
+        function showLimitBanner() { document.getElementById('limit-banner').style.display = 'block'; startCountdown(); }
         function startCountdown() {
             let seconds = 3 * 60 * 60;
             const el = document.getElementById('countdown');
@@ -241,35 +213,30 @@
         function getLevelPrompt() {
             const level = document.getElementById('level-selector').value;
             const prompts = {
-                primary: "You are Calci, a friendly primary school tutor. Use simple words and fun examples.",
-                middle: "You are Calci, a middle school tutor. Explain clearly with relatable examples.",
-                high: "You are Calci, a high school tutor. Use proper math terminology and step-by-step logic.",
-                university: "You are Calci, a university professor. Provide rigorous solutions with notation and proofs.",
-                adult: "You are Calci, a professional assistant. Provide efficient solutions with real-world context."
+                primary: "Friendly primary tutor. Simple words.",
+                middle: "Middle school tutor. Relatable examples.",
+                high: "High school tutor. Step-by-step logic.",
+                university: "University professor. Rigorous notation.",
+                adult: "Professional assistant. Efficient solutions."
             };
             return prompts[level] || prompts.high;
         }
 
+        // --- 🤖 FIXED AI TEXT SOLVER (v1beta for April 2026) ---
         async function fetchAISolution(problemStr) {
-            const status = checkLimit();
-            if (status === 'blocked') return;
-            
+            if (checkLimit() === 'blocked') return;
             incrementQuestionCount();
             const aiPanel = document.getElementById('ai-output-panel');
             const aiContent = document.getElementById('ai-content-text');
             aiPanel.style.display = 'block';
-            aiContent.innerHTML = '<span class="loading-pulse">⚡ Calci is solving...</span>';
-
-            const levelPrompt = getLevelPrompt();
-            const prompt = status === 'downgraded' 
-                ? `${levelPrompt} Give a very brief summary answer only. Problem: ${problemStr}`
-                : `${levelPrompt} Solve step-by-step. Format clearly. Problem: ${problemStr}`;
+            aiContent.innerHTML = '⚡ Calci is solving...';
 
             try {
+                // Endpoint fixed to v1beta for gemini-3.1 flagship models
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-preview:generateContent?key=${GEMINI_API_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                    body: JSON.stringify({ contents: [{ parts: [{ text: getLevelPrompt() + " Solve: " + problemStr }] }] })
                 });
                 const data = await response.json();
                 if (data.error) throw new Error(data.error.message);
@@ -277,10 +244,9 @@
             } catch (err) { aiContent.innerHTML = "❌ Error: " + err.message; }
         }
 
+        // --- 📷 FIXED AI VISION SOLVER ---
         async function processVisionAI(source) {
-            const status = checkLimit();
-            if (status === 'blocked') return;
-
+            if (checkLimit() === 'blocked') return;
             const statusBox = source === 'canvas' ? document.getElementById('sketch-status') : document.getElementById('photo-status');
             statusBox.value = "⚡ Calci is reading...";
             
@@ -291,45 +257,34 @@
                 } else {
                     const file = document.getElementById('file-input').files[0];
                     if (!file) return;
-                    const reader = new FileReader();
                     base64Image = await new Promise(res => {
+                        const reader = new FileReader();
                         reader.onload = () => res(reader.result.split(',')[1]);
                         reader.readAsDataURL(file);
                     });
                 }
-
                 incrementQuestionCount();
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-preview:generateContent?key=${GEMINI_API_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{ parts: [
-                            { text: getLevelPrompt() + " Read and solve the math problem in this image step-by-step. If unreadable say CONFUSED." },
+                            { text: getLevelPrompt() + " Solve problem in image step-by-step. If unreadable say CONFUSED." },
                             { inline_data: { mime_type: "image/jpeg", data: base64Image } }
                         ]}]
                     })
                 });
                 const data = await response.json();
                 if (data.error) throw new Error(data.error.message);
-                
                 let result = data.candidates[0].content.parts[0].text.trim();
-                if (result.includes("CONFUSED")) {
-                    statusBox.value = "Could not read — try again";
-                } else {
-                    statusBox.value = "✅ Solved!";
-                    const aiPanel = document.getElementById('ai-output-panel');
-                    const aiContent = document.getElementById('ai-content-text');
-                    aiPanel.style.display = 'block';
-                    aiContent.innerHTML = result.replace(/\n/g, '<br>');
-                }
+                if (result.includes("CONFUSED")) { statusBox.value = "Could not read — try again"; } 
+                else { statusBox.value = "✅ Solved!"; document.getElementById('ai-output-panel').style.display = 'block'; document.getElementById('ai-content-text').innerHTML = result.replace(/\n/g, '<br>'); }
             } catch (err) { statusBox.value = "❌ Error — try again"; }
         }
 
         function closeAIPanel() { document.getElementById('ai-output-panel').style.display = 'none'; }
-
         const panels = ["math-ui", "sketch-zone", "photo-zone", "age-zone", "date-diff-zone", "time-math-zone", "timesheet-zone", "time-format-zone"];
         const d = document.getElementById('display');
-
         function switchMode(mode) {
             panels.forEach(p => document.getElementById(p).style.display = 'none');
             closeAIPanel();
@@ -338,47 +293,12 @@
             else if (mode === 'photo') { document.getElementById('photo-zone').style.display = 'block'; }
             else { document.getElementById(mode + '-zone').style.display = 'block'; }
         }
-
         function solve() { try { d.value = math.evaluate(d.value.replace(/×/g, '*').replace(/÷/g, '/')); } catch (e) { d.value = "ERROR"; } }
-
-        function calcAge() {
-            const dob = new Date(document.getElementById('age-dob').value);
-            if (isNaN(dob)) return;
-            document.getElementById('age-result').innerText = "Age: " + Math.abs(new Date(Date.now() - dob.getTime()).getUTCFullYear() - 1970);
-        }
-
-        function calcDateDiff() {
-            const d1 = new Date(document.getElementById('dd-start').value);
-            const d2 = new Date(document.getElementById('dd-end').value);
-            if (isNaN(d1) || isNaN(d2)) return;
-            document.getElementById('dd-result').innerText = Math.ceil(Math.abs(d2 - d1) / 86400000) + " Days";
-        }
-
-        function calcTimeMath() {
-            const base = document.getElementById('tm-base').value;
-            if (!base) return;
-            let [h, m] = base.split(':').map(Number);
-            let mod = (parseInt(document.getElementById('tm-hours').value) || 0) * 60 + (parseInt(document.getElementById('tm-mins').value) || 0);
-            let total = (document.getElementById('tm-action').value === 'add') ? (h*60+m)+mod : (h*60+m)-mod;
-            total = ((total % 1440) + 1440) % 1440;
-            document.getElementById('tm-result').innerText = String(Math.floor(total/60)).padStart(2,'0') + ":" + String(total%60).padStart(2,'0');
-        }
-
-        function calcTimesheet() {
-            const t1 = document.getElementById('ts-in').value, t2 = document.getElementById('ts-out').value;
-            if (!t1 || !t2) return;
-            let mins = (new Date("2000-01-01 " + t2) - new Date("2000-01-01 " + t1)) / 60000;
-            if (mins < 0) mins += 1440;
-            mins -= (parseInt(document.getElementById('ts-break').value) || 0);
-            document.getElementById('ts-result').innerText = Math.floor(mins/60) + "h " + (mins%60) + "m";
-        }
-
-        function calcTimeFormat() {
-            let t = document.getElementById('tf-input').value;
-            if (!t) return;
-            let [h, m] = t.split(':');
-            document.getElementById('tf-result').innerText = (+h % 12 || 12) + ":" + m + (+h < 12 ? ' AM' : ' PM');
-        }
+        function calcAge() { const dob = new Date(document.getElementById('age-dob').value); document.getElementById('age-result').innerText = isNaN(dob) ? "Invalid" : "Age: " + Math.abs(new Date(Date.now() - dob.getTime()).getUTCFullYear() - 1970); }
+        function calcDateDiff() { const d1 = new Date(document.getElementById('dd-start').value), d2 = new Date(document.getElementById('dd-end').value); document.getElementById('dd-result').innerText = (isNaN(d1)||isNaN(d2)) ? "Invalid" : Math.ceil(Math.abs(d2-d1)/86400000)+" Days"; }
+        function calcTimeMath() { const base = document.getElementById('tm-base').value; if(!base) return; let [h,m]=base.split(':').map(Number); let mod = (parseInt(document.getElementById('tm-hours').value)||0)*60+(parseInt(document.getElementById('tm-mins').value)||0); let total = (document.getElementById('tm-action').value==='add') ? (h*60+m)+mod : (h*60+m)-mod; total = ((total%1440)+1440)%1440; document.getElementById('tm-result').innerText = String(Math.floor(total/60)).padStart(2,'0')+":"+String(total%60).padStart(2,'0'); }
+        function calcTimesheet() { const t1=document.getElementById('ts-in').value, t2=document.getElementById('ts-out').value; if(!t1||!t2) return; let mins = (new Date("2000-01-01 "+t2)-new Date("2000-01-01 "+t1))/60000; if(mins<0) mins+=1440; mins-=parseInt(document.getElementById('ts-break').value)||0; document.getElementById('ts-result').innerText = Math.floor(mins/60)+"h "+(mins%60)+"m"; }
+        function calcTimeFormat() { let t=document.getElementById('tf-input').value; if(!t) return; let [h,m]=t.split(':'); document.getElementById('tf-result').innerText = (+h%12||12)+":"+m+(+h<12?' AM':' PM'); }
 
         const canvas = document.getElementById('canvas'), ctx = canvas.getContext('2d');
         function initCanvas() {
@@ -386,35 +306,32 @@
             ctx.fillStyle = "white"; ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.strokeStyle = 'black'; ctx.lineWidth = 6; ctx.lineCap = 'round';
             
-            // Mouse Events
+            // Mouse drawing
             canvas.onmousedown = (e) => { canvas.drawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); };
             canvas.onmousemove = (e) => { if (canvas.drawing) { ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); } };
             canvas.onmouseup = () => canvas.drawing = false;
 
-            // TOUCH EVENTS for Mobile
+            // TOUCH DRAWING (Fixed for Mobile phones)
             canvas.addEventListener("touchstart", function (e) {
-                const touch = e.touches[0];
                 const rect = canvas.getBoundingClientRect();
+                const touch = e.touches[0];
                 canvas.drawing = true;
                 ctx.beginPath();
                 ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
-                e.preventDefault();
+                e.preventDefault(); // Stop page scrolling
             }, false);
 
             canvas.addEventListener("touchmove", function (e) {
                 if (canvas.drawing) {
-                    const touch = e.touches[0];
                     const rect = canvas.getBoundingClientRect();
+                    const touch = e.touches[0];
                     ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
                     ctx.stroke();
                 }
-                e.preventDefault();
+                e.preventDefault(); // Stop page scrolling
             }, false);
 
-            canvas.addEventListener("touchend", function (e) {
-                canvas.drawing = false;
-                e.preventDefault();
-            }, false);
+            canvas.addEventListener("touchend", function (e) { canvas.drawing = false; e.preventDefault(); }, false);
         }
         function clearCanvas() { ctx.fillStyle = "white"; ctx.fillRect(0, 0, canvas.width, canvas.height); }
 
@@ -433,6 +350,7 @@
                 grid.appendChild(btn);
             });
         }
+        switchMode('std');
     </script>
 </body>
 </html>

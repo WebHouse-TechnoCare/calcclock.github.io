@@ -80,13 +80,11 @@
 
     <div class="calc-container">
 
-        <!-- Calci Branding -->
         <div class="calci-header">
             <div class="calci-name">⚡ CALCI</div>
             <div class="calci-sub">Your AI Maths Tutor — by CalcClock</div>
         </div>
 
-        <!-- Level Selector -->
         <select class="level-selector" id="level-selector">
             <option value="primary">🟢 Primary School</option>
             <option value="middle">🔵 Middle School</option>
@@ -198,14 +196,12 @@
         <div class="disclaimer">V8.0 | CALCI AI TUTOR ENGINE | CALCCLOCK.COM</div>
     </div>
 
-    <!-- AI Output Panel -->
     <div id="ai-output-panel">
         <h3>⚡ Calci — Your AI Maths Tutor</h3>
         <div id="ai-content-text"></div>
         <button onclick="closeAIPanel()" style="margin-top:15px; width:100%; background:#222; color:#ccc; border:none; padding:10px; border-radius:8px; cursor:pointer;">Dismiss</button>
     </div>
 
-    <!-- Question limit banner -->
     <div class="limit-banner" id="limit-banner">
         🔥 You've used today's free questions! Come back in <span id="countdown">3:00:00</span> or <a href="/pricing" style="color:var(--gold);">upgrade to Premium</a> for unlimited solving.
     </div>
@@ -214,16 +210,21 @@
         // ==========================================
         // 🔑 CALCI API ENGINE
         // ==========================================
-        const GEMINI_API_KEY = "AIzaSyC4xiFkstCWG673JiIAgNQiNXIfcXoj2yw";
+        // IMPORTANT: Put your newly generated API key here. NEVER share it publicly!
+        const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE";
 
         // ==========================================
-        // 🔢 QUESTION LIMIT SYSTEM
+        // 🔢 QUESTION LIMIT SYSTEM (Fixed Timer Bug)
         // ==========================================
         const FREE_LIMIT = 5;
-        const DOWNGRADE_LIMIT = 3; // extra downgraded questions after free limit
+        const DOWNGRADE_LIMIT = 3; 
 
         function getTodayKey() {
             return 'calci_questions_' + new Date().toDateString();
+        }
+        
+        function getBlockTimeKey() {
+            return getTodayKey() + '_blockedTime';
         }
 
         function getQuestionCount() {
@@ -237,14 +238,24 @@
         }
 
         function checkLimit() {
+            // If already blocked, show banner and calculate remaining time
+            if (localStorage.getItem(getBlockTimeKey())) {
+                showLimitBanner();
+                return 'blocked';
+            }
+
             const count = getQuestionCount();
             if (count >= FREE_LIMIT + DOWNGRADE_LIMIT) {
+                // Set the exact time they were blocked so it survives page reloads
+                localStorage.setItem(getBlockTimeKey(), Date.now());
                 showLimitBanner();
                 return 'blocked';
             }
             if (count >= FREE_LIMIT) return 'downgraded';
             return 'full';
         }
+
+        let countdownInterval; // Keep track of interval so we don't start multiple
 
         function showLimitBanner() {
             const banner = document.getElementById('limit-banner');
@@ -253,16 +264,35 @@
         }
 
         function startCountdown() {
-            let seconds = 3 * 60 * 60;
+            if (countdownInterval) clearInterval(countdownInterval);
+            
+            const blockTime = parseInt(localStorage.getItem(getBlockTimeKey()) || Date.now());
             const el = document.getElementById('countdown');
-            const interval = setInterval(() => {
-                if (seconds <= 0) { clearInterval(interval); document.getElementById('limit-banner').style.display = 'none'; return; }
-                seconds--;
-                const h = Math.floor(seconds / 3600).toString().padStart(2,'0');
-                const m = Math.floor((seconds % 3600) / 60).toString().padStart(2,'0');
-                const s = (seconds % 60).toString().padStart(2,'0');
+            
+            countdownInterval = setInterval(() => {
+                const now = Date.now();
+                const elapsedSeconds = Math.floor((now - blockTime) / 1000);
+                let secondsRemaining = (3 * 60 * 60) - elapsedSeconds;
+
+                if (secondsRemaining <= 0) { 
+                    clearInterval(countdownInterval); 
+                    document.getElementById('limit-banner').style.display = 'none'; 
+                    // Reset everything so they can ask questions again
+                    localStorage.removeItem(getBlockTimeKey());
+                    localStorage.setItem(getTodayKey(), '0');
+                    return; 
+                }
+                
+                const h = Math.floor(secondsRemaining / 3600).toString().padStart(2,'0');
+                const m = Math.floor((secondsRemaining % 3600) / 60).toString().padStart(2,'0');
+                const s = (secondsRemaining % 60).toString().padStart(2,'0');
                 el.textContent = `${h}:${m}:${s}`;
             }, 1000);
+        }
+
+        // Run once on load just in case they are already blocked
+        if (localStorage.getItem(getBlockTimeKey())) {
+            showLimitBanner();
         }
 
         // ==========================================
@@ -287,10 +317,15 @@
         const aiContent = document.getElementById('ai-content-text');
 
         async function fetchAISolution(problemStr) {
+            if(GEMINI_API_KEY === "YOUR_GEMINI_API_KEY_HERE") {
+                aiPanel.style.display = 'block';
+                aiContent.innerHTML = "❌ Add your Gemini API Key in the code.";
+                return;
+            }
+
             const status = checkLimit();
             if (status === 'blocked') {
-                showLimitBanner();
-                return;
+                return; // Banner is handled by checkLimit
             }
 
             const count = incrementQuestionCount();
@@ -319,7 +354,7 @@
                 const data = await response.json();
                 if (data.error) throw new Error(data.error.message);
                 
-                d.value = "✅ Solved by Calci";
+                document.getElementById('display').value = "✅ Solved by Calci";
                 let answer = data.candidates[0].content.parts[0].text.replace(/\n/g, '<br>');
                 
                 if (status === 'downgraded') {
@@ -346,8 +381,10 @@
         }
 
         async function processVisionAI(source) {
+            if(GEMINI_API_KEY === "YOUR_GEMINI_API_KEY_HERE") { alert("API Key Required"); return; }
+
             const status = checkLimit();
-            if (status === 'blocked') { showLimitBanner(); return; }
+            if (status === 'blocked') { return; } // Banner handled inside checkLimit
 
             const statusBox = source === 'canvas' ? document.getElementById('sketch-status') : document.getElementById('photo-status');
             statusBox.value = "⚡ Calci is reading your problem...";
@@ -530,6 +567,7 @@
             ctx.fillStyle = "white"; 
             ctx.fillRect(0, 0, canvas.width, canvas.height); 
             document.getElementById('sketch-status').value = "Draw your maths problem below"; 
+            document.getElementById('display').value = "0"; // Bug Fix: Clearing canvas resets display
         }
 
         // ==========================================

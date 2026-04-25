@@ -1,356 +1,136 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CalcClock | AI Maths Tutor</title>
-    <link rel="icon" type="image/png" href="/logo1.png">
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
-    
-    <style>
-        :root { --gold: #d4af37; --bg: #050505; --panel: #111; --silver: #e0e0e0; --accent: #222; }
-        body { background: var(--bg); color: var(--silver); font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; overflow-x: hidden; }
-        
-        .home-btn { position: absolute; top: 20px; left: 20px; z-index: 100; }
-        .home-btn img { height: 35px; opacity: 0.5; transition: 0.3s; }
-        .home-btn:hover img { opacity: 1; }
+<meta charset="UTF-8">
+<title>Calci AI</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
 
-        .calc-container { background: var(--panel); padding: 25px; border-radius: 30px; border: 1px solid #222; width: 100%; max-width: 400px; box-sizing: border-box; box-shadow: 0 40px 100px rgba(0,0,0,0.9); position: relative; z-index: 10; }
-        
-        .calci-header { text-align: center; margin-bottom: 16px; }
-        .calci-header .calci-name { font-size: 1.1rem; font-weight: bold; color: var(--gold); letter-spacing: 2px; }
-        .calci-header .calci-sub { font-size: 0.65rem; color: #555; letter-spacing: 1px; text-transform: uppercase; }
+<style>
+body {
+  background: #050505;
+  color: #e0e0e0;
+  font-family: Arial;
+  text-align: center;
+  padding: 40px;
+}
 
-        .level-selector { width: 100%; background: #0a0a0a; color: #888; border: 1px solid #2a2a2a; padding: 10px; border-radius: 10px; font-size: 0.8rem; margin-bottom: 12px; outline: none; cursor: pointer; }
-        .level-selector option { background: #111; color: var(--silver); }
+h1 {
+  color: gold;
+}
 
-        .mega-menu { width: 100%; background: #1a1a1a; color: var(--gold); border: 1px solid var(--gold); padding: 12px; border-radius: 12px; font-size: 1rem; font-weight: bold; margin-bottom: 20px; outline: none; cursor: pointer; }
-        .mega-menu optgroup { background: #000; color: #fff; font-weight: bold; }
-        .mega-menu option { background: #111; color: var(--silver); }
+input {
+  width: 80%;
+  padding: 15px;
+  font-size: 18px;
+  margin-top: 20px;
+  border-radius: 10px;
+  border: none;
+}
 
-        .display-wrapper { background: #000; border-radius: 15px; margin-bottom: 20px; padding: 15px; box-shadow: inset 0 0 20px #000; min-height: 80px; display: flex; flex-direction: column; justify-content: center; }
-        #display { width: 100%; background: transparent; border: none; color: var(--gold); font-size: 1.8rem; text-align: right; font-family: 'Courier New', monospace; outline: none; padding: 0; margin: 0; }
+button {
+  padding: 15px 25px;
+  margin: 10px;
+  background: gold;
+  border: none;
+  cursor: pointer;
+  border-radius: 10px;
+  font-weight: bold;
+}
 
-        .panel-zone { display: none; width: 100%; animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        
-        canvas { background: #fff; border: 1px solid #333; border-radius: 15px; width: 100%; height: 300px; touch-action: none; cursor: crosshair; display: block; }
-        .ai-btn { background: linear-gradient(45deg, #111, #222); color: var(--gold); border: 1px solid var(--gold); width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s; margin-top: 10px; }
-        .ai-btn:hover { background: var(--gold); color: black; }
-        
-        .upload-label { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px; background: #0a0a0a; border-radius: 15px; border: 2px dashed #444; color: #666; cursor: pointer; transition: 0.3s; font-weight: bold; letter-spacing: 1px; font-size: 0.8rem; }
-        .upload-label:hover { border-color: var(--gold); color: var(--gold); }
-        #file-input { display: none; }
-        
-        #button-grid { display: grid; gap: 8px; }
-        .calc-btn { background: #1a1a1a; color: #fff; border: none; border-radius: 6px; font-size: 1.1rem; cursor: pointer; transition: 0.1s; display: flex; align-items: center; justify-content: center; height: 48px; }
-        .calc-btn:active { transform: translateY(2px); }
-        .calc-btn.op { color: var(--gold); background: #222; font-size: 1.2rem; }
-        .calc-btn.eq { background: var(--gold); color: black; font-weight: bold; font-size: 1.4rem; }
-        .calc-btn.sci { font-size: 0.8rem; }
-        .calc-btn.ai-trigger { background: linear-gradient(45deg, #d4af37, #9b7e20); color: #000; font-weight: bold; font-size: 0.9rem; grid-column: span 2; }
-        
-        .tool-form label { display: block; margin-top: 10px; font-size: 0.8rem; color: #888; text-transform: uppercase; }
-        .tool-form input, .tool-form select { width: 100%; padding: 12px; margin-top: 5px; background: #000; border: 1px solid #333; color: var(--gold); border-radius: 8px; box-sizing: border-box; font-family: monospace; font-size: 1rem; }
-        .tool-result { margin-top: 15px; padding: 15px; background: #1a1a1a; border-left: 3px solid var(--gold); border-radius: 5px; font-size: 1.1rem; min-height: 20px; word-wrap: break-word; }
-
-        #ai-output-panel { display: none; background: #0a0a0a; border: 1px solid var(--gold); border-radius: 15px; width: 100%; max-width: 400px; margin-top: 20px; padding: 20px; box-sizing: border-box; color: #ccc; font-size: 0.9rem; line-height: 1.6; box-shadow: 0 10px 30px rgba(212, 175, 55, 0.1); }
-        #ai-output-panel h3 { margin-top: 0; color: var(--gold); font-size: 1rem; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 14px; }
-        .loading-pulse { animation: pulse 1.5s infinite; color: var(--gold); font-weight: bold; }
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
-
-        .limit-banner { display: none; background: #1a0a00; border: 1px solid #d4af37; border-radius: 10px; padding: 12px 16px; margin-top: 12px; font-size: 0.8rem; color: #d4af37; text-align: center; width: 100%; max-width: 400px; box-sizing: border-box; }
-
-        .disclaimer { font-size: 0.55rem; color: #444; margin-top: 15px; text-align: center; letter-spacing: 1px; }
-    </style>
+#output {
+  margin-top: 20px;
+  background: #111;
+  padding: 20px;
+  border-radius: 10px;
+  min-height: 100px;
+}
+</style>
 </head>
+
 <body>
 
-    <a href="/" class="home-btn"><img src="/logo1.png" alt="Home" onerror="this.style.display='none'"></a>
+<h1>⚡ CALCI AI</h1>
 
-    <div class="calc-container">
-        <div class="calci-header">
-            <div class="calci-name">⚡ CALCI</div>
-            <div class="calci-sub">Your AI Maths Tutor — by CalcClock</div>
-        </div>
+<input id="input" placeholder="Type your maths problem here...">
 
-        <select class="level-selector" id="level-selector">
-            <option value="primary">🟢 Primary School</option>
-            <option value="middle">🔵 Middle School</option>
-            <option value="high" selected>🟠 High School</option>
-            <option value="university">🔴 University</option>
-            <option value="adult">⚫ Professional / Adult</option>
-        </select>
-        
-        <select class="mega-menu" id="mode-selector" onchange="switchMode(this.value)">
-            <optgroup label="🧮 MATH & AI">
-                <option value="std">Standard Math</option>
-                <option value="sci">Scientific Math</option>
-                <option value="draw">AI Sketch Solver</option>
-                <option value="photo">AI Photo Solver</option>
-            </optgroup>
-            <optgroup label="📅 DATE TOOLS">
-                <option value="age">Age Calculator</option>
-                <option value="date-diff">Date Difference</option>
-            </optgroup>
-            <optgroup label="⏳ TIME TOOLS">
-                <option value="time-math">Add/Subtract Time</option>
-            </optgroup>
-            <optgroup label="💼 WORK TOOLS">
-                <option value="timesheet">Shift / Timesheet</option>
-            </optgroup>
-            <optgroup label="🔄 CONVERTERS">
-                <option value="time-format">12h ↔ 24h Converter</option>
-            </optgroup>
-        </select>
+<br>
 
-        <div id="math-ui" class="panel-zone" style="display: block;">
-            <div class="display-wrapper"><input type="text" id="display" readonly value="0"></div>
-            <div id="button-grid"></div>
-        </div>
+<button onclick="calculate()">🧮 Calculate</button>
+<button onclick="askAI()">⚡ Ask Calci (Step-by-step)</button>
 
-        <div id="sketch-zone" class="panel-zone">
-            <div class="display-wrapper" style="min-height:40px;"><input type="text" id="sketch-status" readonly value="Draw your maths problem below"></div>
-            <canvas id="canvas"></canvas>
-            <div style="display:flex; gap:10px;">
-                <button style="flex:1; background:#222; color:#666; border:none; border-radius:8px; cursor:pointer;" onclick="clearCanvas()">CLEAR</button>
-                <button class="ai-btn" style="flex:3; margin-top:0;" onclick="processVisionAI('canvas')">READ & SOLVE</button>
-            </div>
-        </div>
+<div id="output">Result will appear here...</div>
 
-        <div id="photo-zone" class="panel-zone">
-            <div class="display-wrapper" style="min-height:40px;"><input type="text" id="photo-status" readonly value="Upload your maths problem"></div>
-            <label for="file-input" class="upload-label"> 
-                <span>📷 SNAP PROBLEM</span>
-                <span style="font-size: 0.6rem; margin-top: 10px; font-weight: normal; color:#444;">Handwriting or Printed</span>
-            </label>
-            <input type="file" id="file-input" accept="image/*" onchange="processVisionAI('file')">
-        </div>
+<script>
 
-        <div id="age-zone" class="panel-zone tool-form">
-            <label>Date of Birth</label>
-            <input type="date" id="age-dob">
-            <button class="ai-btn" onclick="calcAge()">Calculate Age</button>
-            <div class="tool-result" id="age-result">Result will appear here...</div>
-        </div>
-        <div id="date-diff-zone" class="panel-zone tool-form">
-            <label>Start Date</label><input type="date" id="dd-start">
-            <label>End Date</label><input type="date" id="dd-end">
-            <button class="ai-btn" onclick="calcDateDiff()">Calculate Difference</button>
-            <div class="tool-result" id="dd-result">Result will appear here...</div>
-        </div>
-        <div id="time-math-zone" class="panel-zone tool-form">
-            <label>Base Time</label><input type="time" id="tm-base">
-            <div style="display:flex; gap:10px;">
-                <div style="flex:1;"><label>Action</label><select id="tm-action"><option value="add">Add</option><option value="sub">Subtract</option></select></div>
-                <div style="flex:1;"><label>Hours</label><input type="number" id="tm-hours" value="0"></div>
-                <div style="flex:1;"><label>Mins</label><input type="number" id="tm-mins" value="0"></div>
-            </div>
-            <button class="ai-btn" onclick="calcTimeMath()">Calculate</button>
-            <div class="tool-result" id="tm-result">Result will appear here...</div>
-        </div>
-        <div id="timesheet-zone" class="panel-zone tool-form">
-            <label>In</label><input type="time" id="ts-in"><label>Out</label><input type="time" id="ts-out">
-            <label>Break (Mins)</label><input type="number" id="ts-break" value="30">
-            <button class="ai-btn" onclick="calcTimesheet()">Calculate</button>
-            <div class="tool-result" id="ts-result">Result will appear here...</div>
-        </div>
-        <div id="time-format-zone" class="panel-zone tool-form">
-            <label>24h Time</label><input type="time" id="tf-input">
-            <button class="ai-btn" onclick="calcTimeFormat()">Convert</button>
-            <div class="tool-result" id="tf-result">Result will appear here...</div>
-        </div>
+// 🔑 PASTE YOUR GEMINI API KEY HERE
+const API_KEY = "AIzaSyApQUKGYuOXsM5vf0AxvgtFmiYoUWA0uds";
 
-        <div class="disclaimer">V8.0 | CALCI AI TUTOR ENGINE | CALCCLOCK.COM</div>
-    </div>
+// NORMAL CALCULATOR
+function calculate() {
+  try {
+    let val = document.getElementById("input").value;
+    document.getElementById("output").innerHTML = math.evaluate(val);
+  } catch {
+    document.getElementById("output").innerHTML = "❌ Invalid input";
+  }
+}
 
-    <div id="ai-output-panel">
-        <h3 id="ai-title">⚡ Calci — Your AI Maths Tutor</h3>
-        <div id="ai-content-text"></div>
-        <button onclick="closeAIPanel()" style="margin-top:15px; width:100%; background:#222; color:#ccc; border:none; padding:10px; border-radius:8px; cursor:pointer;">Dismiss</button>
-    </div>
+// AI SOLVER
+async function askAI() {
 
-    <div class="limit-banner" id="limit-banner">
-        🔥 Questions used! Back in <span id="countdown">3:00:00</span> or <a href="/pricing" style="color:var(--gold);">upgrade</a>.
-    </div>
+  let problem = document.getElementById("input").value;
 
-    <script>
-        // ==========================================
-        // 🔑 CALCI API ENGINE (Fixed 2026 Beta Endpoint)
-        // ==========================================
-        const GEMINI_API_KEY = "AIzaSyDXa3de7UMImD6P6C0C_h0q7wW2GnsIeD4";
+  if (!problem) {
+    document.getElementById("output").innerHTML = "⚠️ Enter a problem first";
+    return;
+  }
 
-        const FREE_LIMIT = 5;
-        const DOWNGRADE_LIMIT = 3;
-        function getTodayKey() { return 'calci_questions_' + new Date().toDateString(); }
-        function getQuestionCount() { return parseInt(localStorage.getItem(getTodayKey()) || '0'); }
-        function incrementQuestionCount() {
-            const count = getQuestionCount() + 1;
-            localStorage.setItem(getTodayKey(), count);
-            return count;
-        }
-        function checkLimit() {
-            const count = getQuestionCount();
-            if (count >= FREE_LIMIT + DOWNGRADE_LIMIT) { showLimitBanner(); return 'blocked'; }
-            if (count >= FREE_LIMIT) return 'downgraded';
-            return 'full';
-        }
-        function showLimitBanner() { document.getElementById('limit-banner').style.display = 'block'; startCountdown(); }
-        function startCountdown() {
-            let seconds = 3 * 60 * 60;
-            const el = document.getElementById('countdown');
-            const interval = setInterval(() => {
-                if (seconds <= 0) { clearInterval(interval); document.getElementById('limit-banner').style.display = 'none'; return; }
-                seconds--;
-                const h = Math.floor(seconds / 3600).toString().padStart(2,'0');
-                const m = Math.floor((seconds % 3600) / 60).toString().padStart(2,'0');
-                const s = (seconds % 60).toString().padStart(2,'0');
-                el.textContent = `${h}:${m}:${s}`;
-            }, 1000);
-        }
+  document.getElementById("output").innerHTML = "⚡ Calci is solving...";
 
-        function getLevelPrompt() {
-            const level = document.getElementById('level-selector').value;
-            const prompts = {
-                primary: "Friendly primary tutor. Simple words.",
-                middle: "Middle school tutor. Relatable examples.",
-                high: "High school tutor. Step-by-step logic.",
-                university: "University professor. Rigorous notation.",
-                adult: "Professional assistant. Efficient solutions."
-            };
-            return prompts[level] || prompts.high;
-        }
+  try {
 
-        // --- 🤖 FIXED AI TEXT SOLVER (v1beta for April 2026) ---
-        async function fetchAISolution(problemStr) {
-            if (checkLimit() === 'blocked') return;
-            incrementQuestionCount();
-            const aiPanel = document.getElementById('ai-output-panel');
-            const aiContent = document.getElementById('ai-content-text');
-            aiPanel.style.display = 'block';
-            aiContent.innerHTML = '⚡ Calci is solving...';
-
-            try {
-                // Endpoint fixed to v1beta for gemini-3.1 flagship models
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-preview:generateContent?key=${GEMINI_API_KEY}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: getLevelPrompt() + " Solve: " + problemStr }] }] })
-                });
-                const data = await response.json();
-                if (data.error) throw new Error(data.error.message);
-                aiContent.innerHTML = data.candidates[0].content.parts[0].text.replace(/\n/g, '<br>');
-            } catch (err) { aiContent.innerHTML = "❌ Error: " + err.message; }
-        }
-
-        // --- 📷 FIXED AI VISION SOLVER ---
-        async function processVisionAI(source) {
-            if (checkLimit() === 'blocked') return;
-            const statusBox = source === 'canvas' ? document.getElementById('sketch-status') : document.getElementById('photo-status');
-            statusBox.value = "⚡ Calci is reading...";
-            
-            try {
-                let base64Image = "";
-                if (source === 'canvas') {
-                    base64Image = document.getElementById('canvas').toDataURL('image/jpeg').split(',')[1];
-                } else {
-                    const file = document.getElementById('file-input').files[0];
-                    if (!file) return;
-                    base64Image = await new Promise(res => {
-                        const reader = new FileReader();
-                        reader.onload = () => res(reader.result.split(',')[1]);
-                        reader.readAsDataURL(file);
-                    });
+    const response = await fetch(
+      "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=" + API_KEY,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: "Solve step by step like a teacher: " + problem
                 }
-                incrementQuestionCount();
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-preview:generateContent?key=${GEMINI_API_KEY}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [
-                            { text: getLevelPrompt() + " Solve problem in image step-by-step. If unreadable say CONFUSED." },
-                            { inline_data: { mime_type: "image/jpeg", data: base64Image } }
-                        ]}]
-                    })
-                });
-                const data = await response.json();
-                if (data.error) throw new Error(data.error.message);
-                let result = data.candidates[0].content.parts[0].text.trim();
-                if (result.includes("CONFUSED")) { statusBox.value = "Could not read — try again"; } 
-                else { statusBox.value = "✅ Solved!"; document.getElementById('ai-output-panel').style.display = 'block'; document.getElementById('ai-content-text').innerHTML = result.replace(/\n/g, '<br>'); }
-            } catch (err) { statusBox.value = "❌ Error — try again"; }
-        }
+              ]
+            }
+          ]
+        })
+      }
+    );
 
-        function closeAIPanel() { document.getElementById('ai-output-panel').style.display = 'none'; }
-        const panels = ["math-ui", "sketch-zone", "photo-zone", "age-zone", "date-diff-zone", "time-math-zone", "timesheet-zone", "time-format-zone"];
-        const d = document.getElementById('display');
-        function switchMode(mode) {
-            panels.forEach(p => document.getElementById(p).style.display = 'none');
-            closeAIPanel();
-            if (mode === 'std' || mode === 'sci') { document.getElementById('math-ui').style.display = 'block'; renderButtons(mode); }
-            else if (mode === 'draw') { document.getElementById('sketch-zone').style.display = 'block'; setTimeout(initCanvas, 100); }
-            else if (mode === 'photo') { document.getElementById('photo-zone').style.display = 'block'; }
-            else { document.getElementById(mode + '-zone').style.display = 'block'; }
-        }
-        function solve() { try { d.value = math.evaluate(d.value.replace(/×/g, '*').replace(/÷/g, '/')); } catch (e) { d.value = "ERROR"; } }
-        function calcAge() { const dob = new Date(document.getElementById('age-dob').value); document.getElementById('age-result').innerText = isNaN(dob) ? "Invalid" : "Age: " + Math.abs(new Date(Date.now() - dob.getTime()).getUTCFullYear() - 1970); }
-        function calcDateDiff() { const d1 = new Date(document.getElementById('dd-start').value), d2 = new Date(document.getElementById('dd-end').value); document.getElementById('dd-result').innerText = (isNaN(d1)||isNaN(d2)) ? "Invalid" : Math.ceil(Math.abs(d2-d1)/86400000)+" Days"; }
-        function calcTimeMath() { const base = document.getElementById('tm-base').value; if(!base) return; let [h,m]=base.split(':').map(Number); let mod = (parseInt(document.getElementById('tm-hours').value)||0)*60+(parseInt(document.getElementById('tm-mins').value)||0); let total = (document.getElementById('tm-action').value==='add') ? (h*60+m)+mod : (h*60+m)-mod; total = ((total%1440)+1440)%1440; document.getElementById('tm-result').innerText = String(Math.floor(total/60)).padStart(2,'0')+":"+String(total%60).padStart(2,'0'); }
-        function calcTimesheet() { const t1=document.getElementById('ts-in').value, t2=document.getElementById('ts-out').value; if(!t1||!t2) return; let mins = (new Date("2000-01-01 "+t2)-new Date("2000-01-01 "+t1))/60000; if(mins<0) mins+=1440; mins-=parseInt(document.getElementById('ts-break').value)||0; document.getElementById('ts-result').innerText = Math.floor(mins/60)+"h "+(mins%60)+"m"; }
-        function calcTimeFormat() { let t=document.getElementById('tf-input').value; if(!t) return; let [h,m]=t.split(':'); document.getElementById('tf-result').innerText = (+h%12||12)+":"+m+(+h<12?' AM':' PM'); }
+    const data = await response.json();
 
-        const canvas = document.getElementById('canvas'), ctx = canvas.getContext('2d');
-        function initCanvas() {
-            canvas.width = document.getElementById('sketch-zone').clientWidth; canvas.height = 300;
-            ctx.fillStyle = "white"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = 'black'; ctx.lineWidth = 6; ctx.lineCap = 'round';
-            
-            // Mouse drawing
-            canvas.onmousedown = (e) => { canvas.drawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); };
-            canvas.onmousemove = (e) => { if (canvas.drawing) { ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); } };
-            canvas.onmouseup = () => canvas.drawing = false;
+    console.log(data); // DEBUG
 
-            // TOUCH DRAWING (Fixed for Mobile phones)
-            canvas.addEventListener("touchstart", function (e) {
-                const rect = canvas.getBoundingClientRect();
-                const touch = e.touches[0];
-                canvas.drawing = true;
-                ctx.beginPath();
-                ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
-                e.preventDefault(); // Stop page scrolling
-            }, false);
+    if (!data.candidates) {
+      document.getElementById("output").innerHTML =
+        "❌ API error. Check console (Right click → Inspect → Console)";
+      return;
+    }
 
-            canvas.addEventListener("touchmove", function (e) {
-                if (canvas.drawing) {
-                    const rect = canvas.getBoundingClientRect();
-                    const touch = e.touches[0];
-                    ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
-                    ctx.stroke();
-                }
-                e.preventDefault(); // Stop page scrolling
-            }, false);
+    let result = data.candidates[0].content.parts[0].text;
 
-            canvas.addEventListener("touchend", function (e) { canvas.drawing = false; e.preventDefault(); }, false);
-        }
-        function clearCanvas() { ctx.fillStyle = "white"; ctx.fillRect(0, 0, canvas.width, canvas.height); }
+    document.getElementById("output").innerHTML =
+      result.replace(/\n/g, "<br>");
 
-        function renderButtons(mode) {
-            const grid = document.getElementById('button-grid'); grid.innerHTML = '';
-            const btns = (mode === 'std') ? ['C','⌫','(',')','7','8','9','/','4','5','6','*','1','2','3','-','0','.','=','+','⚡ Ask Calci — Step by Step'] : ['sin','cos','tan','C','⌫','sqrt','^','(',')','/','log','7','8','9','*','pi','4','5','6','-','e','1','2','3','+','⚡ Ask Calci — Step by Step','0','00','.', '='];
-            grid.style.gridTemplateColumns = (mode === 'std') ? 'repeat(4, 1fr)' : 'repeat(5, 1fr)';
-            btns.forEach(b => {
-                const btn = document.createElement('button'); btn.innerText = b; btn.className = 'calc-btn';
-                if (['/','*','-','+','^'].includes(b)) btn.classList.add('op');
-                if (b === '=') { btn.classList.add('eq'); btn.onclick = solve; }
-                else if (b === '⚡ Ask Calci — Step by Step') { btn.classList.add('ai-trigger'); btn.onclick = () => fetchAISolution(d.value); }
-                else if (b === 'C') btn.onclick = () => d.value = '0';
-                else if (b === '⌫') btn.onclick = () => d.value = d.value.slice(0, -1) || '0';
-                else btn.onclick = () => { d.value = (d.value === '0') ? b : d.value + b; };
-                grid.appendChild(btn);
-            });
-        }
-        switchMode('std');
-    </script>
+  } catch (err) {
+    document.getElementById("output").innerHTML = "❌ " + err.message;
+  }
+}
+
+</script>
+
 </body>
 </html>
